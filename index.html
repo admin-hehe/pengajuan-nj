@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Input REKAP</title>
 
-    <!-- TailwindCSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -19,11 +18,11 @@
 </head>
 <body class="p-6">
 
-<div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-md">
+<div class="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-md">
 
-    <h1 class="text-3xl font-bold mb-2">Form Input — REKAP</h1>
+    <h1 class="text-3xl font-bold mb-3">Form Input — REKAP</h1>
     <p class="text-gray-600 mb-6">
-        Masukkan data acara dan produk. Tambah banyak item, total akan dihitung otomatis.
+        Masukkan data acara dan produk. Tambah banyak item, total dan kode produk akan otomatis terisi.
     </p>
 
     <!-- FORM UTAMA -->
@@ -62,9 +61,21 @@
 
     <h2 class="text-xl font-semibold mb-3">Daftar Item</h2>
 
+    <!-- HEADER -->
+    <div class="grid grid-cols-7 gap-2 font-semibold border-b pb-2 mb-2">
+        <div>Kode</div>
+        <div>Nama Produk</div>
+        <div>Jumlah</div>
+        <div>Stok</div>
+        <div>Harga</div>
+        <div>Total</div>
+        <div>Aksi</div>
+    </div>
+
+    <!-- ITEM ROWS -->
     <div id="items"></div>
 
-    <button id="addItemBtn" 
+    <button id="addItemBtn"
         class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
         + Tambah Item
     </button>
@@ -77,21 +88,11 @@
 </div>
 
 <script>
-/* ===========================
-    KONFIGURASI
-=========================== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx1x8gGJphhqmRAOQpqJtZVs4DHatn6joBgJ7WrAbfy7vbatOYtOs9wI_N67r6arJ5wNQ/exec";  // GANTI
 
-
-
-/* ===========================
-    DATA MASTER (akan diisi)
-=========================== */
 let masterData = [];
 
-/* ===========================
-    LOAD MASTER DI AWAL
-=========================== */
+/* ========== LOAD MASTER ========== */
 async function loadMaster() {
     try {
         const res = await fetch(WEB_APP_URL + "?action=getMaster");
@@ -99,9 +100,9 @@ async function loadMaster() {
 
         masterData = data;
 
-        // isi datalist autocomplete
         const list = document.getElementById("produkList");
         list.innerHTML = "";
+
         data.forEach(p => {
             const opt = document.createElement("option");
             opt.value = p.nama;
@@ -112,55 +113,16 @@ async function loadMaster() {
         alert("Gagal memuat produk: " + err);
     }
 }
-
 loadMaster();
 
 
-
-/* ===========================
-    TAMBAH ITEM BARU
-=========================== */
-function addItemRow() {
-    const row = document.createElement("div");
-    row.className = "item-row flex gap-2 mb-2";
-
-    row.innerHTML = `
-        <input type="text" class="kode form-control w-24 bg-gray-100" placeholder="Kode" disabled>
-
-        <input type="text" class="nama-produk form-control flex-1" list="produkList" placeholder="Ketik atau pilih...">
-
-        <input type="number" class="jumlah form-control w-24" placeholder="Qty" min="1">
-
-        <input type="number" class="stok form-control w-24 bg-gray-100" disabled placeholder="Stok">
-
-        <input type="text" class="harga form-control w-28 bg-gray-100" disabled placeholder="Harga">
-
-        <input type="text" class="total form-control w-28 bg-gray-100" disabled placeholder="Total">
-
-        <button class="hapus px-3 py-1 bg-red-600 text-white rounded">Hapus</button>
-    `;
-
-    document.getElementById("items").appendChild(row);
-
-    setupRowEvents(row);
-}
-
-document.getElementById("addItemBtn").onclick = addItemRow;
-
-
-
-/* ===========================
-    FORMAT RUPIAH
-=========================== */
+/* ========== FORMAT RUPIAH ========== */
 function formatRupiah(num) {
     return new Intl.NumberFormat("id-ID").format(num);
 }
 
 
-
-/* ===========================
-    HITUNG GRAND TOTAL
-=========================== */
+/* ========== GRAND TOTAL ========== */
 function hitungGrandTotal() {
     let sum = 0;
     document.querySelectorAll(".item-row").forEach(row => {
@@ -171,11 +133,39 @@ function hitungGrandTotal() {
 }
 
 
+/* ========== TAMBAH ITEM ========== */
+function addItemRow() {
 
-/* ===========================
-    SETUP EVENT SETIAP BARIS
-=========================== */
+    const row = document.createElement("div");
+    row.className = "item-row grid grid-cols-7 gap-2 mb-2";
+
+    row.innerHTML = `
+        <input type="text" class="kode form-control bg-gray-100" disabled>
+
+        <input type="text" class="nama-produk form-control" list="produkList"
+            placeholder="Ketik atau pilih...">
+
+        <input type="number" class="jumlah form-control" min="1" placeholder="Qty">
+
+        <input type="number" class="stok form-control bg-gray-100" disabled>
+
+        <input type="text" class="harga form-control bg-gray-100" disabled>
+
+        <input type="text" class="total form-control bg-gray-100" disabled>
+
+        <button class="hapus px-3 py-1 bg-red-600 text-white rounded">X</button>
+    `;
+
+    document.getElementById("items").appendChild(row);
+    setupRowEvents(row);
+}
+
+document.getElementById("addItemBtn").onclick = addItemRow;
+
+
+/* ========== EVENT PER BARIS ========== */
 function setupRowEvents(row) {
+
     const namaInput = row.querySelector(".nama-produk");
     const kodeInput = row.querySelector(".kode");
     const stokInput = row.querySelector(".stok");
@@ -184,7 +174,7 @@ function setupRowEvents(row) {
     const totalInput = row.querySelector(".total");
     const btnHapus = row.querySelector(".hapus");
 
-    // lookup produk
+    // lookup otomatis
     namaInput.addEventListener("input", () => {
         const nama = namaInput.value.trim();
         const produk = masterData.find(p => p.nama === nama);
@@ -201,7 +191,7 @@ function setupRowEvents(row) {
         hitungGrandTotal();
     });
 
-    // jumlah → total + validasi stok
+    // jumlah → total
     jumlahInput.addEventListener("input", () => {
         const stok = parseInt(stokInput.value || 0);
         const qty = parseInt(jumlahInput.value || 0);
@@ -224,10 +214,7 @@ function setupRowEvents(row) {
 }
 
 
-
-/* ===========================
-    SUBMIT DATA
-=========================== */
+/* ========== SUBMIT DATA ========== */
 document.getElementById("submitBtn").onclick = async function () {
 
     const tanggal = document.getElementById("tanggal").value;
@@ -236,7 +223,6 @@ document.getElementById("submitBtn").onclick = async function () {
     const grandTotal = document.getElementById("grandTotal").value;
 
     const items = [];
-
     document.querySelectorAll(".item-row").forEach(row => {
         items.push({
             kode: row.querySelector(".kode").value,
@@ -259,14 +245,12 @@ document.getElementById("submitBtn").onclick = async function () {
         });
 
         const result = await res.json();
-
         alert(result.message || "Berhasil disimpan!");
 
     } catch (err) {
         alert("Gagal kirim: " + err);
     }
 };
-
 </script>
 
 </body>
