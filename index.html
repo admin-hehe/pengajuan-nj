@@ -47,7 +47,7 @@
     <input id="grandTotal" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
   </div>
 
-  <!-- KODE ODOO AUTO (DIPINDAHKAN KE DALAM TABLE) -->
+  <!-- KODE PREVIEW (hasil kode pertama) -->
   <div>
     <label class="block text-sm font-medium text-gray-700">Kode Preview</label>
     <input id="kodeOdooPreview" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
@@ -74,7 +74,7 @@
 
 <!-- BUTTONS -->
 <div class="flex items-center gap-2 mb-4">
-  <button id="addItemBtn" class="px-4 py-2 bg-green-500 text-white rounded">+ Tambah Item</button>
+  <button id="addItemBtn" type="button" class="px-4 py-2 bg-green-500 text-white rounded">+ Tambah Item</button>
   <button id="submitBtn" class="px-4 py-2 bg-indigo-600 text-white rounded">Submit</button>
   <div id="msg" class="text-sm text-green-700 ml-4"></div>
 </div>
@@ -87,7 +87,7 @@
 <!-- SCRIPT -->
 <script>
 /* ------------------ CONFIG ------------------ */
-const API_URL = "https://script.google.com/macros/s/AKfycbz1fSK5PhMFryoFr8OB6SjDUCG_1TzGgGz25xepnYbbkO5Xo0g8k_QfEHWPDLGxRh9j4A/exec"; // GANTI DENGAN URL WEB APP
+const API_URL = "https://script.google.com/macros/s/AKfycbz1fSK5PhMFryoFr8OB6SjDUCG_1TzGgGz25xepnYbbkO5Xo0g8k_QfEHWPDLGxRh9j4A/exec";
 let products = [];
 let counter = 0;
 
@@ -226,7 +226,7 @@ function recalcGrandTotal() {
     total += parseNumber(tr.querySelector(".total").value);
 
     const kode = tr.querySelector(".kode").value;
-    if (!kodePrev) kodePrev = kode;
+    if (!kodePrev && kode) kodePrev = kode;
   });
 
   document.getElementById("grandTotal").value = formatRibuan(total);
@@ -273,6 +273,7 @@ document.getElementById("submitBtn").onclick = async () => {
 (async function init() {
   await loadProducts();
   addItemRow();
+  document.getElementById("addItemBtn").onclick = addItemRow;  // <-- FIX!
 })();
 </script>
 
