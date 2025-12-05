@@ -47,7 +47,7 @@
     <input id="grandTotal" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
   </div>
 
-  <!-- KODE PREVIEW (hasil kode pertama) -->
+  <!-- KODE PREVIEW -->
   <div>
     <label class="block text-sm font-medium text-gray-700">Kode Preview</label>
     <input id="kodeOdooPreview" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
@@ -87,7 +87,7 @@
 <!-- SCRIPT -->
 <script>
 /* ------------------ CONFIG ------------------ */
-const API_URL = "https://script.google.com/macros/s/AKfycbw1ggOGA1u6-PyX2birMLubadIYByKS0r5SwsvTo71w9sfM7OG2HKggKNvuZuk8BsYCgw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxF8pqiEAOKa_s3C3fEdAAkFQRK_fgen2HxxCybWq4OE8XD1JXkl0Jn-AdRm48FFD_bJQ/exec";
 let products = [];
 let counter = 0;
 
@@ -96,19 +96,16 @@ function formatRibuan(n) {
   if (!n) return "";
   return Number(n).toLocaleString("id-ID");
 }
-
 function parseNumber(s) {
   if (!s) return 0;
   return Number(String(s).replace(/[^\d.-]/g, "")) || 0;
 }
-
 function showError(msg) {
   document.getElementById("errorBox").textContent = msg;
 }
 function clearError() {
   document.getElementById("errorBox").textContent = "";
 }
-
 function setMsg(msg) {
   document.getElementById("msg").textContent = msg;
 }
@@ -157,7 +154,7 @@ function addItemRow() {
   const totalInput = tr.querySelector(".total");
   const suggestions = tr.querySelector(".suggestions");
 
-  /* --- AUTOCOMPLETE PRODUK --- */
+  /* AUTOCOMPLETE */
   namaInput.addEventListener("input", () => {
     const q = namaInput.value.toLowerCase();
     suggestions.innerHTML = "";
@@ -186,7 +183,7 @@ function addItemRow() {
     });
   });
 
-  /* --- VALIDASI JUMLAH --- */
+  /* VALIDASI JUMLAH */
   jumlahInput.addEventListener("input", () => {
     const j = parseNumber(jumlahInput.value);
     const s = parseNumber(stokInput.value);
@@ -203,7 +200,7 @@ function addItemRow() {
     recalcGrandTotal();
   });
 
-  /* HITUNG TOTAL ROW */
+  /* ROW TOTAL */
   function recalcRow() {
     const j = parseNumber(jumlahInput.value);
     const h = parseNumber(hargaInput.value);
@@ -233,7 +230,7 @@ function recalcGrandTotal() {
   document.getElementById("kodeOdooPreview").value = kodePrev;
 }
 
-/* ------------------ SUBMIT ------------------ */
+/* ------------------ SUBMIT (SOLUSI NO-CORS) ------------------ */
 document.getElementById("submitBtn").onclick = async () => {
   const tanggal = document.getElementById("tanggal").value;
   const kegiatan = document.getElementById("kegiatan").value;
@@ -251,17 +248,19 @@ document.getElementById("submitBtn").onclick = async () => {
     total: parseNumber(r.querySelector(".total").value)
   }));
 
-  const payload = { tanggal, kegiatan, kodeBudget, items };
+  const formData = new FormData();
+  formData.append("action", "submit");
+  formData.append("tanggal", tanggal);
+  formData.append("kegiatan", kegiatan);
+  formData.append("kodeBudget", kodeBudget);
+  formData.append("items", JSON.stringify(items));
 
   try {
-    const res = await fetch(API_URL + "?action=submit", {
+    await fetch(API_URL + "?action=submit", {
       method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" }
+      body: formData,
+      mode: "no-cors"
     });
-
-    const json = await res.json();
-    if (json.error) return showError(json.error);
 
     setMsg("Berhasil terkirim.");
   } catch (err) {
@@ -273,7 +272,7 @@ document.getElementById("submitBtn").onclick = async () => {
 (async function init() {
   await loadProducts();
   addItemRow();
-  document.getElementById("addItemBtn").onclick = addItemRow;  // <-- FIX!
+  document.getElementById("addItemBtn").onclick = addItemRow;
 })();
 </script>
 
