@@ -1,279 +1,141 @@
-<!doctype html>
-<html lang="id">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Form Input — REKAP</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  .input-number::-webkit-outer-spin-button, .input-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .suggestion { cursor: pointer; padding: 6px; }
-  .suggestion:hover { background: #f3f4f6; }
-</style>
+  <title>Form Input REKAP</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .item-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .item-row input, .item-row select { padding: 6px; width: 150px; }
+    .item-row .kode { width: 90px; background: #eee; }
+    button { padding: 10px 16px; margin-top: 20px; }
+  </style>
 </head>
-<body class="bg-gradient-to-b from-teal-50 to-white min-h-screen p-6">
-  <div class="max-w-4xl mx-auto space-y-6">
-    <div class="bg-white p-6 rounded-xl shadow">
-      <h1 class="text-2xl font-semibold mb-2">Form Input — REKAP</h1>
-      <p class="text-sm text-gray-600 mb-4">Masukkan data acara dan produk. Tambah banyak item, total akan dihitung otomatis.</p>
+<body>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-          <input id="tanggal" type="date" class="mt-1 p-2 border rounded w-full" />
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-700">Kegiatan</label>
-          <input id="kegiatan" type="text" class="mt-1 p-2 border rounded w-full" placeholder="Contoh: Makan malam bersama" />
-        </div>
-      </div>
+<h2>Input REKAP</h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Kode Budget</label>
-          <input id="kodeBudget" type="text" class="mt-1 p-2 border rounded w-full" placeholder="ID-230213..." />
-        </div>
+<div id="item-container"></div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Grand Total</label>
-          <input id="grandTotal" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
-        </div>
-      </div>
-
-      <!-- TABEL ITEM -->
-      <div class="overflow-x-auto mb-4">
-        <table class="w-full text-sm" id="itemsTable">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="p-2 text-left">Kode Odoo</th>
-              <th class="p-2 text-left">Nama Produk</th>
-              <th class="p-2 text-left">Jumlah</th>
-              <th class="p-2 text-left">Stok</th>
-              <th class="p-2 text-left">Harga</th>
-              <th class="p-2 text-left">Total</th>
-              <th class="p-2 text-left">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="itemsBody"></tbody>
-        </table>
-      </div>
-
-      <div class="flex items-center gap-2 mb-4">
-        <button id="addItemBtn" class="px-4 py-2 bg-green-500 text-white rounded">+ Tambah Item</button>
-        <button id="submitBtn" class="px-4 py-2 bg-indigo-600 text-white rounded">Submit</button>
-        <div id="msg" class="text-sm text-green-700 ml-4"></div>
-      </div>
-
-      <div id="errorBox" class="text-sm text-red-600"></div>
-    </div>
-  </div>
+<button onclick="addItem()">+ Tambah Item</button>
+<br><br>
+<button onclick="submitForm()">Kirim</button>
 
 <script>
-/* CONFIG */
-const API_URL = "https://script.google.com/macros/s/AKfycbx1x8gGJphhqmRAOQpqJtZVs4DHatn6joBgJ7WrAbfy7vbatOYtOs9wI_N67r6arJ5wNQ/exec"; // <--- isi URL webapp Anda
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs5QGHsHpei0nvIjlZQ-8QdVZr8iI1Ux8-44WHprwTizmf85mbLrhi1cj11nzkKl4NtA/exec"; // GANTI
 
-let products = [];
-let counter = 0;
+let masterData = [];
 
-/* helpers */
-function formatRibuan(num) {
-  if (num === null || num === undefined || isNaN(Number(num))) return "";
-  return Number(num).toLocaleString('id-ID');
-}
-function parseNumber(s) {
-  if (!s) return 0;
-  const cleaned = String(s).replace(/[^\d.-]/g, '');
-  const n = parseFloat(cleaned);
-  return isNaN(n) ? 0 : n;
-}
-function escapeHtml(s) {
-  if (!s) return "";
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-function showError(msg){ document.getElementById('errorBox').textContent = msg; }
-function clearError(){ document.getElementById('errorBox').textContent = ""; }
-function setMsg(msg){ document.getElementById('msg').textContent = msg; }
-
-/* LOAD PRODUCTS */
-async function loadProducts() {
+async function loadMaster() {
   try {
-    const res = await fetch(API_URL, { cache:"no-store" });
-    const json = await res.json();
-    if (json.error) return showError(json.error);
-    products = json.products || [];
+    const response = await fetch(SCRIPT_URL + "?action=getMaster");
+    const data = await response.json();
+    masterData = data;
+    addItem(); // tambahkan item pertama
   } catch (e) {
-    showError("Gagal memuat produk: " + e.message);
+    alert("Gagal memuat MASTER");
   }
 }
 
-/* ADD ROW */
-function addItemRow(prefill={}) {
-  counter++;
-  const tbody = document.getElementById('itemsBody');
-  const tr = document.createElement('tr');
-  tr.id = "row_" + counter;
+function addItem() {
+  const container = document.getElementById("item-container");
 
-  const nama = prefill.namaProduk || "";
-  const jumlah = prefill.jumlah || "";
-  const stok = prefill.stok || "";
-  const harga = prefill.harga ? formatRibuan(prefill.harga) : "";
-  const kode = prefill.kodeOdoo || "";
+  const row = document.createElement("div");
+  row.className = "item-row";
 
-  tr.innerHTML = `
-    <td class="p-2"><input type="text" class="kodeOdoo w-full p-1 border rounded bg-gray-50" value="${kode}" readonly /></td>
-    <td class="p-2">
-      <input type="text" class="namaProduk w-full p-1 border rounded" value="${escapeHtml(nama)}" placeholder="ketik atau pilih..." />
-      <div class="suggestions text-xs text-gray-500 mt-1"></div>
-    </td>
-    <td class="p-2"><input type="number" min="0" class="jumlah input-number w-full p-1 border rounded" value="${jumlah}" /></td>
-    <td class="p-2"><input type="text" class="stok w-full p-1 border rounded bg-gray-50" value="${stok}" readonly /></td>
-    <td class="p-2"><input type="text" class="harga w-full p-1 border rounded" value="${harga}" /></td>
-    <td class="p-2"><input type="text" class="total w-full p-1 border rounded bg-gray-50" readonly /></td>
-    <td class="p-2"><button class="removeBtn px-3 py-1 bg-red-500 text-white rounded">Hapus</button></td>
-  `;
+  // dropdown nama produk
+  const nama = document.createElement("select");
+  nama.innerHTML = `<option value="">Pilih Produk...</option>` +
+    masterData.map(p => `<option value="${p.nama}">${p.nama}</option>`).join("");
 
-  tbody.appendChild(tr);
+  // kode (OTOMATIS)
+  const kode = document.createElement("input");
+  kode.placeholder = "Kode";
+  kode.className = "kode";
+  kode.readOnly = true;
 
-  const namaInput = tr.querySelector('.namaProduk');
-  const kodeInput = tr.querySelector('.kodeOdoo');
-  const suggestions = tr.querySelector('.suggestions');
-  const jumlahInput = tr.querySelector('.jumlah');
-  const stokInput = tr.querySelector('.stok');
-  const hargaInput = tr.querySelector('.harga');
-  const totalInput = tr.querySelector('.total');
+  // jumlah input
+  const jumlah = document.createElement("input");
+  jumlah.type = "number";
+  jumlah.placeholder = "Jumlah";
 
-  function recalc() {
-    const j = parseNumber(jumlahInput.value);
-    const h = parseNumber(hargaInput.value);
-    totalInput.value = j && h ? formatRibuan(j*h) : "";
-    recalcGrandTotal();
-  }
+  // stok otomatis
+  const stok = document.createElement("input");
+  stok.placeholder = "Stok";
+  stok.readOnly = true;
 
-  // AUTOCOMPLETE
-  namaInput.addEventListener('input', () => {
-    const q = namaInput.value.trim().toLowerCase();
-    suggestions.innerHTML = '';
-    if (!q) return;
+  // harga otomatis
+  const harga = document.createElement("input");
+  harga.placeholder = "Harga";
+  harga.readOnly = true;
 
-    const matches = products.filter(p => p.nama.toLowerCase().includes(q)).slice(0,8);
-    matches.forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'suggestion';
-      div.textContent = `${m.nama} (${m.kode})`;
-      div.onclick = () => {
-        namaInput.value = m.nama;
-        kodeInput.value = m.kode || "";
-        stokInput.value = m.available ?? "";
-        hargaInput.value = m.harga ? formatRibuan(m.harga) : "";
-        suggestions.innerHTML = "";
-        recalc();
-      };
-      suggestions.appendChild(div);
-    });
-  });
+  // total
+  const total = document.createElement("input");
+  total.placeholder = "Total";
+  total.readOnly = true;
 
-  jumlahInput.addEventListener('input', () => {
-    const j = parseNumber(jumlahInput.value);
-    const s = parseNumber(stokInput.value);
-    if (s && j > s) {
-      showError(`Jumlah (${j}) melebihi stok (${s}) untuk produk "${namaInput.value}".`);
-    } else clearError();
-    recalc();
-  });
-
-  hargaInput.addEventListener('input', () => {
-    const val = parseNumber(hargaInput.value);
-    hargaInput.value = val ? formatRibuan(val) : "";
-    recalc();
-  });
-
-  tr.querySelector('.removeBtn').onclick = () => {
-    tr.remove();
-    recalcGrandTotal();
+  // event: on product change → lookup
+  nama.onchange = () => {
+    const produk = masterData.find(p => p.nama === nama.value);
+    if (produk) {
+      kode.value = produk.kode;
+      stok.value = produk.stok;
+      harga.value = produk.harga;
+    }
   };
 
-  recalc();
+  // event: hitung total & validasi stok
+  jumlah.oninput = () => {
+    if (Number(jumlah.value) > Number(stok.value)) {
+      alert("Jumlah melebihi stok!");
+      jumlah.value = "";
+      total.value = "";
+      return;
+    }
+    total.value = Number(jumlah.value || 0) * Number(harga.value || 0);
+  };
+
+  row.appendChild(nama);
+  row.appendChild(kode);
+  row.appendChild(jumlah);
+  row.appendChild(stok);
+  row.appendChild(harga);
+  row.appendChild(total);
+
+  container.appendChild(row);
 }
 
-/* GRAND TOTAL */
-function recalcGrandTotal() {
-  let grand = 0;
-  document.querySelectorAll('.total').forEach(t => {
-    grand += parseNumber(t.value);
+// submit form
+async function submitForm() {
+  const rows = [...document.querySelectorAll(".item-row")];
+  const items = rows.map(r => {
+    const inputs = r.querySelectorAll("input, select");
+    return {
+      nama: inputs[0].value,
+      kode: inputs[1].value,
+      jumlah: inputs[2].value,
+      stok: inputs[3].value,
+      harga: inputs[4].value,
+      total: inputs[5].value
+    };
   });
-  document.getElementById('grandTotal').value = grand ? formatRibuan(grand) : "";
-}
-
-/* SUBMIT */
-document.getElementById('submitBtn').onclick = async () => {
-  clearError();
-  setMsg("");
-
-  const tanggal = document.getElementById('tanggal').value;
-  const kegiatan = document.getElementById('kegiatan').value.trim();
-  const kodeBudget = document.getElementById('kodeBudget').value.trim();
-
-  if (!tanggal) return alert("Pilih tanggal.");
-  if (!kegiatan) return alert("Isi kegiatan.");
-
-  const rows = Array.from(document.querySelectorAll('#itemsBody tr'));
-  if (!rows.length) return alert("Tambahkan 1 item.");
-
-  const items = [];
-  for (const r of rows) {
-    const nama = r.querySelector('.namaProduk').value.trim();
-    const jumlah = parseNumber(r.querySelector('.jumlah').value);
-    const stok = parseNumber(r.querySelector('.stok').value);
-    const harga = parseNumber(r.querySelector('.harga').value);
-    const kode = r.querySelector('.kodeOdoo').value.trim();
-
-    if (!nama) return alert("Nama produk kosong.");
-    if (!jumlah || jumlah <= 0) return alert("Jumlah harus > 0.");
-    if (stok && jumlah > stok) return alert(`Jumlah melebihi stok untuk "${nama}".`);
-
-    items.push({ namaProduk:nama, kodeOdoo: kode, jumlah, stok, harga });
-  }
-
-  const payload = { tanggal, kegiatan, kodeBudget, items };
-
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = "Mengirim...";
 
   try {
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json"},
-      body:JSON.stringify(payload)
+    const response = await fetch(SCRIPT_URL + "?action=submit", {
+      method: "POST",
+      body: JSON.stringify(items),
+      headers: { "Content-Type": "application/json" }
     });
-    const json = await res.json();
-    if (json.error) return showError(json.error);
 
-    setMsg("Terkirim. GroupID: " + (json.groupId || ""));
-
-    document.getElementById('kegiatan').value = "";
-    document.getElementById('kodeBudget').value = "";
-    document.getElementById('itemsBody').innerHTML = "";
-    document.getElementById('grandTotal').value = "";
-    addItemRow();
-
-  } catch(e){
-    showError("Gagal kirim: " + e.message);
+    const result = await response.text();
+    alert("Berhasil: " + result);
+  } catch (e) {
+    alert("Gagal kirim: " + e);
   }
+}
 
-  btn.disabled = false;
-  btn.textContent = "Submit";
-};
-
-/* INIT */
-(async function(){
-  await loadProducts();
-  addItemRow();
-  document.getElementById('addItemBtn').onclick = e => {
-    e.preventDefault();
-    addItemRow();
-  };
-})();
+// mulai
+loadMaster();
 </script>
+
 </body>
 </html>
