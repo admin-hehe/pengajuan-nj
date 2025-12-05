@@ -1,204 +1,273 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Input — REKAP</title>
+    <title>Input REKAP</title>
+
+    <!-- TailwindCSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #e6f7f5, #f4f9ff);
+        }
+        .form-control {
+            @apply border border-gray-300 rounded px-3 py-2 w-full;
+        }
+    </style>
 </head>
+<body class="p-6">
 
-<body class="bg-green-50">
+<div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-md">
 
-    <div class="max-w-6xl mx-auto p-6 bg-white shadow-md mt-6 rounded-lg">
-        <h1 class="text-3xl font-bold mb-4">Form Input — REKAP</h1>
-        <p class="text-gray-600 mb-6">
-            Masukkan data acara dan produk. Tambah banyak item, total akan dihitung otomatis.
-        </p>
+    <h1 class="text-3xl font-bold mb-2">Form Input — REKAP</h1>
+    <p class="text-gray-600 mb-6">
+        Masukkan data acara dan produk. Tambah banyak item, total akan dihitung otomatis.
+    </p>
 
-        <!-- FORM UTAMA -->
-        <form id="rekapForm" class="space-y-4">
-            <!-- Tanggal & Kegiatan -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="font-semibold">Tanggal</label>
-                    <input type="date" id="tanggal" class="w-full p-2 border rounded">
-                </div>
+    <!-- FORM UTAMA -->
+    <div class="grid grid-cols-2 gap-4">
 
-                <div>
-                    <label class="font-semibold">Kegiatan</label>
-                    <input type="text" id="kegiatan" placeholder="Contoh: Makan malam bersama"
-                        class="w-full p-2 border rounded">
-                </div>
-            </div>
+        <div>
+            <label class="font-semibold">Tanggal</label>
+            <input type="date" id="tanggal" class="form-control">
+        </div>
 
-            <!-- Kode Budget + Grand Total -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="font-semibold">Kode Budget</label>
-                    <input type="text" id="kodeBudget" class="w-full p-2 border rounded" placeholder="ID-230213...">
-                </div>
+        <div>
+            <label class="font-semibold">Kegiatan</label>
+            <input type="text" id="kegiatan" class="form-control" placeholder="Contoh: Makan malam bersama">
+        </div>
 
-                <div>
-                    <label class="font-semibold">Grand Total</label>
-                    <input type="text" id="grandTotal" class="w-full p-2 border rounded bg-gray-100" readonly>
-                </div>
-            </div>
+        <div>
+            <label class="font-semibold">Kode Budget</label>
+            <input type="text" id="kodeBudget" class="form-control" placeholder="ID-230213...">
+        </div>
 
-            <!-- TABEL ITEM -->
-            <div class="mt-6">
-                <table class="w-full border rounded" id="itemTable">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="p-2 border">Kode</th>
-                            <th class="p-2 border">Nama Produk</th>
-                            <th class="p-2 border">Jumlah</th>
-                            <th class="p-2 border">Stok</th>
-                            <th class="p-2 border">Harga</th>
-                            <th class="p-2 border">Total</th>
-                            <th class="p-2 border">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="itemBody"></tbody>
-                </table>
-            </div>
+        <div>
+            <label class="font-semibold">(Kode Odoo auto)</label>
+            <input type="text" id="kodeOdoo" class="form-control bg-gray-100" disabled>
+        </div>
 
-            <!-- Tombol -->
-            <div class="flex gap-3 mt-4">
-                <button type="button" id="addItem"
-                    class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">
-                    + Tambah Item
-                </button>
-
-                <button type="submit"
-                    class="bg-purple-700 text-white px-4 py-2 rounded shadow hover:bg-purple-800">
-                    Submit
-                </button>
-            </div>
-        </form>
+        <div>
+            <label class="font-semibold">Grand Total</label>
+            <input type="text" id="grandTotal" class="form-control bg-gray-100" disabled>
+        </div>
     </div>
 
-    <!-- SCRIPT UTAMA -->
-    <script>
-        // ============================
-        // TAMBAH ITEM KE TABEL
-        // ============================
-        document.getElementById("addItem").addEventListener("click", addItemRow);
+    <hr class="my-6">
 
-        function addItemRow() {
-            const tbody = document.getElementById("itemBody");
-            const row = document.createElement("tr");
+    <!-- DAFTAR PRODUK -->
+    <datalist id="produkList"></datalist>
 
-            row.innerHTML = `
-                <td class="border p-2">
-                    <input type="text" class="kode w-full p-1 border rounded bg-gray-100" readonly>
-                </td>
+    <h2 class="text-xl font-semibold mb-3">Daftar Item</h2>
 
-                <td class="border p-2">
-                    <input type="text" class="namaProduk w-full p-1 border rounded" placeholder="ketik atau pilih...">
-                </td>
+    <div id="items"></div>
 
-                <td class="border p-2">
-                    <input type="number" min="1" class="jumlah w-full p-1 border rounded">
-                </td>
+    <button id="addItemBtn" 
+        class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+        + Tambah Item
+    </button>
 
-                <td class="border p-2">
-                    <input type="text" class="stok w-full p-1 border rounded bg-gray-100" readonly>
-                </td>
+    <button id="submitBtn"
+        class="mt-4 px-6 py-2 bg-purple-700 text-white rounded hover:bg-purple-800 ml-4">
+        Submit
+    </button>
 
-                <td class="border p-2">
-                    <input type="text" class="harga w-full p-1 border rounded bg-gray-100" readonly>
-                </td>
+</div>
 
-                <td class="border p-2">
-                    <input type="text" class="total w-full p-1 border rounded bg-gray-100" readonly>
-                </td>
+<script>
+/* ===========================
+    KONFIGURASI
+=========================== */
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx1x8gGJphhqmRAOQpqJtZVs4DHatn6joBgJ7WrAbfy7vbatOYtOs9wI_N67r6arJ5wNQ/exec";  // GANTI
 
-                <td class="border p-2 text-center">
-                    <button class="hapus px-3 py-1 bg-red-600 text-white rounded">Hapus</button>
-                </td>
-            `;
 
-            tbody.appendChild(row);
 
-            row.querySelector(".namaProduk").addEventListener("input", lookupProduk);
-            row.querySelector(".jumlah").addEventListener("input", updateTotal);
+/* ===========================
+    DATA MASTER (akan diisi)
+=========================== */
+let masterData = [];
 
-            row.querySelector(".hapus").addEventListener("click", () => {
-                row.remove();
-                hitungGrandTotal();
-            });
+/* ===========================
+    LOAD MASTER DI AWAL
+=========================== */
+async function loadMaster() {
+    try {
+        const res = await fetch(WEB_APP_URL + "?action=getMaster");
+        const data = await res.json();
+
+        masterData = data;
+
+        // isi datalist autocomplete
+        const list = document.getElementById("produkList");
+        list.innerHTML = "";
+        data.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.nama;
+            list.appendChild(opt);
+        });
+
+    } catch (err) {
+        alert("Gagal memuat produk: " + err);
+    }
+}
+
+loadMaster();
+
+
+
+/* ===========================
+    TAMBAH ITEM BARU
+=========================== */
+function addItemRow() {
+    const row = document.createElement("div");
+    row.className = "item-row flex gap-2 mb-2";
+
+    row.innerHTML = `
+        <input type="text" class="kode form-control w-24 bg-gray-100" placeholder="Kode" disabled>
+
+        <input type="text" class="nama-produk form-control flex-1" list="produkList" placeholder="Ketik atau pilih...">
+
+        <input type="number" class="jumlah form-control w-24" placeholder="Qty" min="1">
+
+        <input type="number" class="stok form-control w-24 bg-gray-100" disabled placeholder="Stok">
+
+        <input type="text" class="harga form-control w-28 bg-gray-100" disabled placeholder="Harga">
+
+        <input type="text" class="total form-control w-28 bg-gray-100" disabled placeholder="Total">
+
+        <button class="hapus px-3 py-1 bg-red-600 text-white rounded">Hapus</button>
+    `;
+
+    document.getElementById("items").appendChild(row);
+
+    setupRowEvents(row);
+}
+
+document.getElementById("addItemBtn").onclick = addItemRow;
+
+
+
+/* ===========================
+    FORMAT RUPIAH
+=========================== */
+function formatRupiah(num) {
+    return new Intl.NumberFormat("id-ID").format(num);
+}
+
+
+
+/* ===========================
+    HITUNG GRAND TOTAL
+=========================== */
+function hitungGrandTotal() {
+    let sum = 0;
+    document.querySelectorAll(".item-row").forEach(row => {
+        const total = row.querySelector(".total").value.replace(/\./g, "");
+        sum += parseInt(total || 0);
+    });
+    document.getElementById("grandTotal").value = formatRupiah(sum);
+}
+
+
+
+/* ===========================
+    SETUP EVENT SETIAP BARIS
+=========================== */
+function setupRowEvents(row) {
+    const namaInput = row.querySelector(".nama-produk");
+    const kodeInput = row.querySelector(".kode");
+    const stokInput = row.querySelector(".stok");
+    const hargaInput = row.querySelector(".harga");
+    const jumlahInput = row.querySelector(".jumlah");
+    const totalInput = row.querySelector(".total");
+    const btnHapus = row.querySelector(".hapus");
+
+    // lookup produk
+    namaInput.addEventListener("input", () => {
+        const nama = namaInput.value.trim();
+        const produk = masterData.find(p => p.nama === nama);
+
+        if (produk) {
+            kodeInput.value = produk.kode;
+            stokInput.value = produk.available;
+            hargaInput.value = formatRupiah(produk.harga);
+        } else {
+            kodeInput.value = "";
+            stokInput.value = "";
+            hargaInput.value = "";
+        }
+        hitungGrandTotal();
+    });
+
+    // jumlah → total + validasi stok
+    jumlahInput.addEventListener("input", () => {
+        const stok = parseInt(stokInput.value || 0);
+        const qty = parseInt(jumlahInput.value || 0);
+        const harga = parseInt(hargaInput.value.replace(/\./g,"") || 0);
+
+        if (qty > stok) {
+            jumlahInput.value = stok;
+            alert("Jumlah melebihi stok!");
         }
 
-        // ============================
-        // LOOKUP PRODUK DARI SHEET MASTER
-        // ============================
-        async function lookupProduk(e) {
-            const row = e.target.closest("tr");
-            const nama = e.target.value.trim();
+        totalInput.value = formatRupiah(qty * harga);
+        hitungGrandTotal();
+    });
 
-            if (!nama) return;
+    // hapus baris
+    btnHapus.onclick = () => {
+        row.remove();
+        hitungGrandTotal();
+    };
+}
 
-            try {
-                const res = await fetch("https://script.google.com/macros/s/AKfycbx1x8gGJphhqmRAOQpqJtZVs4DHatn6joBgJ7WrAbfy7vbatOYtOs9wI_N67r6arJ5wNQ/exec?nama=" + encodeURIComponent(nama));
-                const data = await res.json();
 
-                row.querySelector(".kode").value = data.kode || "";
-                row.querySelector(".stok").value = data.stok || "";
-                row.querySelector(".harga").value = formatRupiah(data.harga || 0);
 
-            } catch (err) {
-                console.error(err);
-                alert("Gagal lookup produk.");
-            }
-        }
+/* ===========================
+    SUBMIT DATA
+=========================== */
+document.getElementById("submitBtn").onclick = async function () {
 
-        // ============================
-        // HITUNG TOTAL PER ITEM
-        // ============================
-        function updateTotal(e) {
-            const row = e.target.closest("tr");
+    const tanggal = document.getElementById("tanggal").value;
+    const kegiatan = document.getElementById("kegiatan").value;
+    const kodeBudget = document.getElementById("kodeBudget").value;
+    const grandTotal = document.getElementById("grandTotal").value;
 
-            let qty = Number(row.querySelector(".jumlah").value);
-            let stok = Number(row.querySelector(".stok").value);
-            let harga = Number((row.querySelector(".harga").value || "0").replace(/\D/g, ""));
+    const items = [];
 
-            // Validasi jumlah > stok
-            if (qty > stok) {
-                alert("Jumlah melebihi stok!");
-                row.querySelector(".jumlah").value = "";
-                row.querySelector(".total").value = "";
-                hitungGrandTotal();
-                return;
-            }
+    document.querySelectorAll(".item-row").forEach(row => {
+        items.push({
+            kode: row.querySelector(".kode").value,
+            nama: row.querySelector(".nama-produk").value,
+            jumlah: row.querySelector(".jumlah").value,
+            stok: row.querySelector(".stok").value,
+            harga: row.querySelector(".harga").value.replace(/\./g,""),
+            total: row.querySelector(".total").value.replace(/\./g,"")
+        });
+    });
 
-            let total = qty * harga;
-            row.querySelector(".total").value = formatRupiah(total);
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "submitData",
+                tanggal, kegiatan, kodeBudget, grandTotal,
+                items: items
+            })
+        });
 
-            hitungGrandTotal();
-        }
+        const result = await res.json();
 
-        // ============================
-        // HITUNG GRAND TOTAL
-        // ============================
-        function hitungGrandTotal() {
-            let total = 0;
+        alert(result.message || "Berhasil disimpan!");
 
-            document.querySelectorAll(".total").forEach(t => {
-                total += Number(t.value.replace(/\D/g, "")) || 0;
-            });
+    } catch (err) {
+        alert("Gagal kirim: " + err);
+    }
+};
 
-            document.getElementById("grandTotal").value = formatRupiah(total);
-        }
-
-        // ============================
-        // FORMAT RUPIAH
-        // ============================
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat("id-ID").format(angka);
-        }
-
-    </script>
+</script>
 
 </body>
 </html>
