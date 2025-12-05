@@ -28,25 +28,24 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Kode Budget</label>
           <input id="kodeBudget" type="text" class="mt-1 p-2 border rounded w-full" placeholder="ID-230213..." />
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">(Kode Odoo auto)</label>
-          <input id="kodeOdooPreview" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
-        </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700">Grand Total</label>
           <input id="grandTotal" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
         </div>
       </div>
 
+      <!-- TABEL ITEM -->
       <div class="overflow-x-auto mb-4">
         <table class="w-full text-sm" id="itemsTable">
           <thead class="bg-gray-100">
             <tr>
+              <th class="p-2 text-left">Kode Odoo</th>
               <th class="p-2 text-left">Nama Produk</th>
               <th class="p-2 text-left">Jumlah</th>
               <th class="p-2 text-left">Stok</th>
@@ -70,66 +69,60 @@
   </div>
 
 <script>
-/* CONFIG: ganti API_URL dengan URL Web App Apps Script Anda */
-const API_URL = "https://script.google.com/macros/s/AKfycbx1x8gGJphhqmRAOQpqJtZVs4DHatn6joBgJ7WrAbfy7vbatOYtOs9wI_N67r6arJ5wNQ/exec"; // contoh: https://script.google.com/macros/s/xxxx/exec
+/* CONFIG */
+const API_URL = "https://script.google.com/macros/s/AKfycbx1x8gGJphhqmRAOQpqJtZVs4DHatn6joBgJ7WrAbfy7vbatOYtOs9wI_N67r6arJ5wNQ/exec"; // <--- isi URL webapp Anda
 
-let products = []; // list dari MASTER
+let products = [];
 let counter = 0;
 
-/* format ribuan id-ID */
+/* helpers */
 function formatRibuan(num) {
   if (num === null || num === undefined || isNaN(Number(num))) return "";
   return Number(num).toLocaleString('id-ID');
 }
 function parseNumber(s) {
-  if (s === null || s === undefined) return 0;
+  if (!s) return 0;
   const cleaned = String(s).replace(/[^\d.-]/g, '');
   const n = parseFloat(cleaned);
   return isNaN(n) ? 0 : n;
 }
+function escapeHtml(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function showError(msg){ document.getElementById('errorBox').textContent = msg; }
+function clearError(){ document.getElementById('errorBox').textContent = ""; }
+function setMsg(msg){ document.getElementById('msg').textContent = msg; }
 
-/* Load products from API */
+/* LOAD PRODUCTS */
 async function loadProducts() {
   try {
-    const res = await fetch(API_URL, { cache: "no-store" });
+    const res = await fetch(API_URL, { cache:"no-store" });
     const json = await res.json();
-    if (json.error) {
-      showError(json.error);
-      return;
-    }
+    if (json.error) return showError(json.error);
     products = json.products || [];
-  } catch (err) {
-    showError("Gagal memuat produk: " + err.message);
+  } catch (e) {
+    showError("Gagal memuat produk: " + e.message);
   }
 }
 
-/* UI helpers */
-function showError(msg) {
-  document.getElementById('errorBox').textContent = msg;
-}
-function clearError() {
-  document.getElementById('errorBox').textContent = "";
-}
-function setMsg(msg) {
-  document.getElementById('msg').textContent = msg;
-}
-
-/* add item row */
-function addItemRow(prefill = {}) {
+/* ADD ROW */
+function addItemRow(prefill={}) {
   counter++;
-  const id = 'row_' + counter;
   const tbody = document.getElementById('itemsBody');
   const tr = document.createElement('tr');
-  tr.id = id;
+  tr.id = "row_" + counter;
 
-  const nama = prefill.namaProduk ? escapeHtml(prefill.namaProduk) : "";
+  const nama = prefill.namaProduk || "";
   const jumlah = prefill.jumlah || "";
-  const stok = prefill.stok !== undefined ? prefill.stok : "";
-  const harga = prefill.harga !== undefined && prefill.harga !== null ? formatRibuan(prefill.harga) : "";
+  const stok = prefill.stok || "";
+  const harga = prefill.harga ? formatRibuan(prefill.harga) : "";
+  const kode = prefill.kodeOdoo || "";
 
   tr.innerHTML = `
+    <td class="p-2"><input type="text" class="kodeOdoo w-full p-1 border rounded bg-gray-50" value="${kode}" readonly /></td>
     <td class="p-2">
-      <input type="text" class="namaProduk w-full p-1 border rounded" value="${nama}" placeholder="ketik atau pilih..." />
+      <input type="text" class="namaProduk w-full p-1 border rounded" value="${escapeHtml(nama)}" placeholder="ketik atau pilih..." />
       <div class="suggestions text-xs text-gray-500 mt-1"></div>
     </td>
     <td class="p-2"><input type="number" min="0" class="jumlah input-number w-full p-1 border rounded" value="${jumlah}" /></td>
@@ -141,204 +134,145 @@ function addItemRow(prefill = {}) {
 
   tbody.appendChild(tr);
 
-  // elements
   const namaInput = tr.querySelector('.namaProduk');
+  const kodeInput = tr.querySelector('.kodeOdoo');
   const suggestions = tr.querySelector('.suggestions');
   const jumlahInput = tr.querySelector('.jumlah');
   const stokInput = tr.querySelector('.stok');
   const hargaInput = tr.querySelector('.harga');
   const totalInput = tr.querySelector('.total');
-  const removeBtn = tr.querySelector('.removeBtn');
 
   function recalc() {
     const j = parseNumber(jumlahInput.value);
     const h = parseNumber(hargaInput.value);
-    const tot = j * h;
-    totalInput.value = tot ? formatRibuan(tot) : "";
+    totalInput.value = j && h ? formatRibuan(j*h) : "";
     recalcGrandTotal();
   }
 
-  // autocomplete suggestions based on products
+  // AUTOCOMPLETE
   namaInput.addEventListener('input', () => {
     const q = namaInput.value.trim().toLowerCase();
     suggestions.innerHTML = '';
     if (!q) return;
-    const matches = products.filter(p => p.nama.toString().toLowerCase().includes(q)).slice(0, 8);
+
+    const matches = products.filter(p => p.nama.toLowerCase().includes(q)).slice(0,8);
     matches.forEach(m => {
       const div = document.createElement('div');
       div.className = 'suggestion';
-      div.textContent = `${m.nama} ${m.kode ? '('+m.kode+')' : ''}`;
-      div.addEventListener('click', () => {
+      div.textContent = `${m.nama} (${m.kode})`;
+      div.onclick = () => {
         namaInput.value = m.nama;
-        stokInput.value = m.available !== undefined ? m.available : "";
-        hargaInput.value = m.harga !== undefined && m.harga !== null ? formatRibuan(m.harga) : "";
-        suggestions.innerHTML = '';
+        kodeInput.value = m.kode || "";
+        stokInput.value = m.available ?? "";
+        hargaInput.value = m.harga ? formatRibuan(m.harga) : "";
+        suggestions.innerHTML = "";
         recalc();
-        // preview kode jika only one item or override
-        updateKodePreviewBasedOnRows();
-      });
+      };
       suggestions.appendChild(div);
     });
   });
 
-  // when user changes harga manually, keep formatted
-  hargaInput.addEventListener('input', () => {
-    const raw = parseNumber(hargaInput.value);
-    hargaInput.value = raw ? formatRibuan(raw) : '';
-    recalc();
-  });
   jumlahInput.addEventListener('input', () => {
-    // validate against stok immediately
     const j = parseNumber(jumlahInput.value);
-    const available = parseNumber(stokInput.value);
-    if (available !== 0 && j > available) {
-      showError(`Jumlah (${j}) melebihi stok (${available}) untuk produk "${namaInput.value}".`);
-    } else {
-      clearError();
-    }
+    const s = parseNumber(stokInput.value);
+    if (s && j > s) {
+      showError(`Jumlah (${j}) melebihi stok (${s}) untuk produk "${namaInput.value}".`);
+    } else clearError();
     recalc();
   });
 
-  removeBtn.addEventListener('click', () => {
+  hargaInput.addEventListener('input', () => {
+    const val = parseNumber(hargaInput.value);
+    hargaInput.value = val ? formatRibuan(val) : "";
+    recalc();
+  });
+
+  tr.querySelector('.removeBtn').onclick = () => {
     tr.remove();
     recalcGrandTotal();
-    updateKodePreviewBasedOnRows();
-  });
+  };
 
-  // initial recalc
   recalc();
 }
 
-/* recalc grand total and kode preview */
+/* GRAND TOTAL */
 function recalcGrandTotal() {
-  const rows = document.querySelectorAll('#itemsBody tr');
   let grand = 0;
-  let kodePreview = "";
-  rows.forEach(r => {
-    const total = parseNumber(r.querySelector('.total').value);
-    grand += total;
+  document.querySelectorAll('.total').forEach(t => {
+    grand += parseNumber(t.value);
   });
-  // choose kode preview: if first row has matched product, use its kode
-  const firstRow = document.querySelector('#itemsBody tr');
-  if (firstRow) {
-    const name = firstRow.querySelector('.namaProduk').value.trim();
-    const prod = products.find(p => p.nama === name);
-    if (prod && prod.kode) kodePreview = prod.kode;
-  }
-  document.getElementById('grandTotal').value = grand ? formatRibuan(grand) : '';
-  document.getElementById('kodeOdooPreview').value = kodePreview;
+  document.getElementById('grandTotal').value = grand ? formatRibuan(grand) : "";
 }
 
-function updateKodePreviewBasedOnRows() {
-  // choose kode if all rows share same product kode (optional), else blank
-  const rows = Array.from(document.querySelectorAll('#itemsBody tr'));
-  const kodeSet = new Set();
-  rows.forEach(r => {
-    const name = r.querySelector('.namaProduk').value.trim();
-    const prod = products.find(p => p.nama === name);
-    if (prod && prod.kode) kodeSet.add(prod.kode);
-    else kodeSet.add("");
-  });
-  if (kodeSet.size === 1) {
-    const only = Array.from(kodeSet)[0];
-    document.getElementById('kodeOdooPreview').value = only || "";
-  } else {
-    // multiple different codes
-    document.getElementById('kodeOdooPreview').value = "";
-  }
-}
-
-/* submit handler */
-document.getElementById('submitBtn').addEventListener('click', async () => {
+/* SUBMIT */
+document.getElementById('submitBtn').onclick = async () => {
   clearError();
-  setMsg('');
+  setMsg("");
+
   const tanggal = document.getElementById('tanggal').value;
   const kegiatan = document.getElementById('kegiatan').value.trim();
   const kodeBudget = document.getElementById('kodeBudget').value.trim();
 
-  if (!tanggal) return alert('Pilih tanggal.');
-  if (!kegiatan) return alert('Isi kegiatan.');
+  if (!tanggal) return alert("Pilih tanggal.");
+  if (!kegiatan) return alert("Isi kegiatan.");
 
   const rows = Array.from(document.querySelectorAll('#itemsBody tr'));
-  if (rows.length === 0) return alert('Tambahkan minimal 1 item.');
+  if (!rows.length) return alert("Tambahkan 1 item.");
 
   const items = [];
-  for (let i = 0; i < rows.length; i++) {
-    const r = rows[i];
+  for (const r of rows) {
     const nama = r.querySelector('.namaProduk').value.trim();
     const jumlah = parseNumber(r.querySelector('.jumlah').value);
     const stok = parseNumber(r.querySelector('.stok').value);
     const harga = parseNumber(r.querySelector('.harga').value);
-    if (!nama) return alert('Nama produk kosong di salah satu baris.');
-    if (!jumlah || jumlah <= 0) return alert('Jumlah harus > 0.');
-    if (stok !== 0 && jumlah > stok) return alert(`Jumlah (${jumlah}) melebihi stok (${stok}) untuk produk "${nama}".`);
+    const kode = r.querySelector('.kodeOdoo').value.trim();
 
-    // find kode in products if exists
-    const prod = products.find(p => p.nama === nama) || {};
-    items.push({
-      namaProduk: nama,
-      kodeOdoo: prod.kode || "",
-      jumlah: jumlah,
-      stok: stok || "",
-      harga: harga
-    });
+    if (!nama) return alert("Nama produk kosong.");
+    if (!jumlah || jumlah <= 0) return alert("Jumlah harus > 0.");
+    if (stok && jumlah > stok) return alert(`Jumlah melebihi stok untuk "${nama}".`);
+
+    items.push({ namaProduk:nama, kodeOdoo: kode, jumlah, stok, harga });
   }
 
-  // build payload
-  const payload = {
-    tanggal: tanggal,
-    kegiatan: kegiatan,
-    kodeBudget: kodeBudget,
-    items: items
-  };
+  const payload = { tanggal, kegiatan, kodeBudget, items };
 
-  // send
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'Mengirim...';
+  btn.textContent = "Mengirim...";
+
   try {
     const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      method:"POST",
+      headers:{ "Content-Type":"application/json"},
+      body:JSON.stringify(payload)
     });
     const json = await res.json();
-    if (json.error) {
-      showError(json.error);
-      btn.disabled = false;
-      btn.textContent = 'Submit';
-      return;
-    }
-    setMsg('Terkirim. GroupID: ' + (json.groupId || ''));
-    // reset form
-    document.getElementById('kegiatan').value = '';
-    document.getElementById('kodeBudget').value = '';
-    document.getElementById('itemsBody').innerHTML = '';
-    document.getElementById('grandTotal').value = '';
-    document.getElementById('kodeOdooPreview').value = '';
+    if (json.error) return showError(json.error);
+
+    setMsg("Terkirim. GroupID: " + (json.groupId || ""));
+
+    document.getElementById('kegiatan').value = "";
+    document.getElementById('kodeBudget').value = "";
+    document.getElementById('itemsBody').innerHTML = "";
+    document.getElementById('grandTotal').value = "";
     addItemRow();
-  } catch (err) {
-    showError('Gagal kirim: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Submit';
+
+  } catch(e){
+    showError("Gagal kirim: " + e.message);
   }
-});
 
-/* helpers */
-function escapeHtml(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+  btn.disabled = false;
+  btn.textContent = "Submit";
+};
 
-/* init */
-(async function init(){
+/* INIT */
+(async function(){
   await loadProducts();
   addItemRow();
-  document.getElementById('addItemBtn').addEventListener('click', (e) => {
+  document.getElementById('addItemBtn').onclick = e => {
     e.preventDefault();
     addItemRow();
-  });
+  };
 })();
 </script>
 </body>
