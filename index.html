@@ -1,140 +1,279 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="id">
 <head>
-  <title>Form Input REKAP</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    .item-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .item-row input, .item-row select { padding: 6px; width: 150px; }
-    .item-row .kode { width: 90px; background: #eee; }
-    button { padding: 10px 16px; margin-top: 20px; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Form Input — REKAP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+.input-number::-webkit-outer-spin-button,
+.input-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.suggestion { cursor: pointer; padding: 6px; }
+.suggestion:hover { background: #f3f4f6; }
+</style>
 </head>
-<body>
 
-<h2>Input REKAP</h2>
+<body class="bg-gradient-to-b from-teal-50 to-white min-h-screen p-6">
 
-<div id="item-container"></div>
+<div class="max-w-4xl mx-auto space-y-6">
 
-<button onclick="addItem()">+ Tambah Item</button>
-<br><br>
-<button onclick="submitForm()">Kirim</button>
+<div class="bg-white p-6 rounded-xl shadow">
 
+<h1 class="text-2xl font-semibold mb-2">Form Input — REKAP</h1>
+<p class="text-sm text-gray-600 mb-4">Masukkan data acara dan produk. Tambah banyak item, total akan dihitung otomatis.</p>
+
+<!-- FORM HEADER -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Tanggal</label>
+    <input id="tanggal" type="date" class="mt-1 p-2 border rounded w-full" />
+  </div>
+
+  <div class="md:col-span-2">
+    <label class="block text-sm font-medium text-gray-700">Kegiatan</label>
+    <input id="kegiatan" type="text" class="mt-1 p-2 border rounded w-full" placeholder="Contoh: Makan malam bersama" />
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Kode Budget</label>
+    <input id="kodeBudget" type="text" class="mt-1 p-2 border rounded w-full" placeholder="ID-230213..." />
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Grand Total</label>
+    <input id="grandTotal" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
+  </div>
+
+  <!-- KODE ODOO AUTO (DIPINDAHKAN KE DALAM TABLE) -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Kode Preview</label>
+    <input id="kodeOdooPreview" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="overflow-x-auto mb-4">
+<table class="w-full text-sm" id="itemsTable">
+<thead class="bg-gray-100">
+<tr>
+  <th class="p-2 text-left">Nama Produk</th>
+  <th class="p-2 text-left">Kode</th>
+  <th class="p-2 text-left">Jumlah</th>
+  <th class="p-2 text-left">Stok</th>
+  <th class="p-2 text-left">Harga</th>
+  <th class="p-2 text-left">Total</th>
+  <th class="p-2 text-left">Aksi</th>
+</tr>
+</thead>
+<tbody id="itemsBody"></tbody>
+</table>
+</div>
+
+<!-- BUTTONS -->
+<div class="flex items-center gap-2 mb-4">
+  <button id="addItemBtn" class="px-4 py-2 bg-green-500 text-white rounded">+ Tambah Item</button>
+  <button id="submitBtn" class="px-4 py-2 bg-indigo-600 text-white rounded">Submit</button>
+  <div id="msg" class="text-sm text-green-700 ml-4"></div>
+</div>
+
+<div id="errorBox" class="text-sm text-red-600"></div>
+
+</div>
+</div>
+
+<!-- SCRIPT -->
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs5QGHsHpei0nvIjlZQ-8QdVZr8iI1Ux8-44WHprwTizmf85mbLrhi1cj11nzkKl4NtA/exec"; // GANTI
+/* ------------------ CONFIG ------------------ */
+const API_URL = "https://script.google.com/macros/s/AKfycbxs5QGHsHpei0nvIjlZQ-8QdVZr8iI1Ux8-44WHprwTizmf85mbLrhi1cj11nzkKl4NtA/exec"; // GANTI DENGAN URL WEB APP
+let products = [];
+let counter = 0;
 
-let masterData = [];
+/* ------------------ HELPERS ------------------ */
+function formatRibuan(n) {
+  if (!n) return "";
+  return Number(n).toLocaleString("id-ID");
+}
 
-async function loadMaster() {
+function parseNumber(s) {
+  if (!s) return 0;
+  return Number(String(s).replace(/[^\d.-]/g, "")) || 0;
+}
+
+function showError(msg) {
+  document.getElementById("errorBox").textContent = msg;
+}
+function clearError() {
+  document.getElementById("errorBox").textContent = "";
+}
+
+function setMsg(msg) {
+  document.getElementById("msg").textContent = msg;
+}
+
+/* ------------------ LOAD MASTER ------------------ */
+async function loadProducts() {
   try {
-    const response = await fetch(SCRIPT_URL + "?action=getMaster");
-    const data = await response.json();
-    masterData = data;
-    addItem(); // tambahkan item pertama
-  } catch (e) {
-    alert("Gagal memuat MASTER");
+    const res = await fetch(API_URL + "?action=getMaster", { cache: "no-store" });
+    const data = await res.json();
+    products = data || [];
+  } catch (err) {
+    showError("Gagal memuat produk: " + err);
   }
 }
 
-function addItem() {
-  const container = document.getElementById("item-container");
+/* ------------------ ADD ITEM ROW ------------------ */
+function addItemRow() {
+  counter++;
+  const rowId = "row_" + counter;
 
-  const row = document.createElement("div");
-  row.className = "item-row";
+  const tr = document.createElement("tr");
+  tr.id = rowId;
 
-  // dropdown nama produk
-  const nama = document.createElement("select");
-  nama.innerHTML = `<option value="">Pilih Produk...</option>` +
-    masterData.map(p => `<option value="${p.nama}">${p.nama}</option>`).join("");
+  tr.innerHTML = `
+    <td class="p-2">
+      <input type="text" class="namaProduk w-full p-1 border rounded" placeholder="ketik produk..." />
+      <div class="suggestions text-xs text-gray-600 mt-1"></div>
+    </td>
+    <td class="p-2"><input type="text" class="kode w-full p-1 border rounded bg-gray-50" readonly /></td>
+    <td class="p-2"><input type="number" class="jumlah w-full p-1 border rounded" min="1" /></td>
+    <td class="p-2"><input type="text" class="stok w-full p-1 border rounded bg-gray-50" readonly /></td>
+    <td class="p-2"><input type="text" class="harga w-full p-1 border rounded bg-gray-50" readonly /></td>
+    <td class="p-2"><input type="text" class="total w-full p-1 border rounded bg-gray-50" readonly /></td>
+    <td class="p-2">
+      <button class="removeBtn px-3 py-1 bg-red-500 text-white rounded">Hapus</button>
+    </td>
+  `;
 
-  // kode (OTOMATIS)
-  const kode = document.createElement("input");
-  kode.placeholder = "Kode";
-  kode.className = "kode";
-  kode.readOnly = true;
+  document.getElementById("itemsBody").appendChild(tr);
 
-  // jumlah input
-  const jumlah = document.createElement("input");
-  jumlah.type = "number";
-  jumlah.placeholder = "Jumlah";
+  const namaInput = tr.querySelector(".namaProduk");
+  const kodeInput = tr.querySelector(".kode");
+  const jumlahInput = tr.querySelector(".jumlah");
+  const stokInput = tr.querySelector(".stok");
+  const hargaInput = tr.querySelector(".harga");
+  const totalInput = tr.querySelector(".total");
+  const suggestions = tr.querySelector(".suggestions");
 
-  // stok otomatis
-  const stok = document.createElement("input");
-  stok.placeholder = "Stok";
-  stok.readOnly = true;
+  /* --- AUTOCOMPLETE PRODUK --- */
+  namaInput.addEventListener("input", () => {
+    const q = namaInput.value.toLowerCase();
+    suggestions.innerHTML = "";
 
-  // harga otomatis
-  const harga = document.createElement("input");
-  harga.placeholder = "Harga";
-  harga.readOnly = true;
+    if (!q) return;
 
-  // total
-  const total = document.createElement("input");
-  total.placeholder = "Total";
-  total.readOnly = true;
+    const matches = products.filter(p => p.nama.toLowerCase().includes(q)).slice(0, 8);
 
-  // event: on product change → lookup
-  nama.onchange = () => {
-    const produk = masterData.find(p => p.nama === nama.value);
-    if (produk) {
-      kode.value = produk.kode;
-      stok.value = produk.stok;
-      harga.value = produk.harga;
-    }
-  };
+    matches.forEach(m => {
+      const div = document.createElement("div");
+      div.className = "suggestion";
+      div.textContent = `${m.nama} (${m.kode})`;
 
-  // event: hitung total & validasi stok
-  jumlah.oninput = () => {
-    if (Number(jumlah.value) > Number(stok.value)) {
-      alert("Jumlah melebihi stok!");
-      jumlah.value = "";
-      total.value = "";
-      return;
-    }
-    total.value = Number(jumlah.value || 0) * Number(harga.value || 0);
-  };
+      div.onclick = () => {
+        namaInput.value = m.nama;
+        kodeInput.value = m.kode;
+        stokInput.value = m.stok;
+        hargaInput.value = formatRibuan(m.harga);
 
-  row.appendChild(nama);
-  row.appendChild(kode);
-  row.appendChild(jumlah);
-  row.appendChild(stok);
-  row.appendChild(harga);
-  row.appendChild(total);
+        suggestions.innerHTML = "";
+        recalcRow();
+        recalcGrandTotal();
+      };
 
-  container.appendChild(row);
-}
-
-// submit form
-async function submitForm() {
-  const rows = [...document.querySelectorAll(".item-row")];
-  const items = rows.map(r => {
-    const inputs = r.querySelectorAll("input, select");
-    return {
-      nama: inputs[0].value,
-      kode: inputs[1].value,
-      jumlah: inputs[2].value,
-      stok: inputs[3].value,
-      harga: inputs[4].value,
-      total: inputs[5].value
-    };
+      suggestions.appendChild(div);
+    });
   });
 
+  /* --- VALIDASI JUMLAH --- */
+  jumlahInput.addEventListener("input", () => {
+    const j = parseNumber(jumlahInput.value);
+    const s = parseNumber(stokInput.value);
+
+    if (j > s) {
+      showError(`Jumlah (${j}) melebihi stok (${s})!`);
+      jumlahInput.value = "";
+      totalInput.value = "";
+      return;
+    }
+
+    clearError();
+    recalcRow();
+    recalcGrandTotal();
+  });
+
+  /* HITUNG TOTAL ROW */
+  function recalcRow() {
+    const j = parseNumber(jumlahInput.value);
+    const h = parseNumber(hargaInput.value);
+    totalInput.value = j * h ? formatRibuan(j * h) : "";
+  }
+
+  /* REMOVE ROW */
+  tr.querySelector(".removeBtn").onclick = () => {
+    tr.remove();
+    recalcGrandTotal();
+  };
+}
+
+/* ------------------ GRAND TOTAL ------------------ */
+function recalcGrandTotal() {
+  let total = 0;
+  let kodePrev = "";
+
+  document.querySelectorAll("#itemsBody tr").forEach(tr => {
+    total += parseNumber(tr.querySelector(".total").value);
+
+    const kode = tr.querySelector(".kode").value;
+    if (!kodePrev) kodePrev = kode;
+  });
+
+  document.getElementById("grandTotal").value = formatRibuan(total);
+  document.getElementById("kodeOdooPreview").value = kodePrev;
+}
+
+/* ------------------ SUBMIT ------------------ */
+document.getElementById("submitBtn").onclick = async () => {
+  const tanggal = document.getElementById("tanggal").value;
+  const kegiatan = document.getElementById("kegiatan").value;
+  const kodeBudget = document.getElementById("kodeBudget").value;
+
+  const rows = [...document.querySelectorAll("#itemsBody tr")];
+  if (!rows.length) return alert("Tambahkan minimal 1 item.");
+
+  const items = rows.map(r => ({
+    nama: r.querySelector(".namaProduk").value,
+    kode: r.querySelector(".kode").value,
+    jumlah: parseNumber(r.querySelector(".jumlah").value),
+    stok: parseNumber(r.querySelector(".stok").value),
+    harga: parseNumber(r.querySelector(".harga").value),
+    total: parseNumber(r.querySelector(".total").value)
+  }));
+
+  const payload = { tanggal, kegiatan, kodeBudget, items };
+
   try {
-    const response = await fetch(SCRIPT_URL + "?action=submit", {
+    const res = await fetch(API_URL + "?action=submit", {
       method: "POST",
-      body: JSON.stringify(items),
+      body: JSON.stringify(payload),
       headers: { "Content-Type": "application/json" }
     });
 
-    const result = await response.text();
-    alert("Berhasil: " + result);
-  } catch (e) {
-    alert("Gagal kirim: " + e);
-  }
-}
+    const json = await res.json();
+    if (json.error) return showError(json.error);
 
-// mulai
-loadMaster();
+    setMsg("Berhasil terkirim.");
+  } catch (err) {
+    showError("Gagal kirim: " + err);
+  }
+};
+
+/* ------------------ INIT ------------------ */
+(async function init() {
+  await loadProducts();
+  addItemRow();
+})();
 </script>
 
 </body>
