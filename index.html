@@ -26,13 +26,11 @@
 <!-- FORM HEADER -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
 
-  <!-- ===== FIELD NAMA (BARU, DESAIN TIDAK DIUBAH) ===== -->
   <div>
     <label class="block text-sm font-medium text-gray-700">Nama</label>
     <input id="namaUser" type="text" class="mt-1 p-2 border rounded w-full"
-      placeholder="Nama PIC" />
+      placeholder="Nama PIC / Penanggung Jawab" />
   </div>
-  <!-- ================================================== -->
 
   <div>
     <label class="block text-sm font-medium text-gray-700">Tanggal</label>
@@ -56,7 +54,6 @@
     <input id="grandTotal" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
   </div>
 
-  <!-- KODE PREVIEW -->
   <div>
     <label class="block text-sm font-medium text-gray-700">Kode Preview</label>
     <input id="kodeOdooPreview" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50" readonly />
@@ -81,7 +78,6 @@
 </table>
 </div>
 
-<!-- BUTTONS -->
 <div class="flex items-center gap-2 mb-4">
   <button id="addItemBtn" type="button" class="px-4 py-2 bg-green-500 text-white rounded">+ Tambah Item</button>
   <button id="submitBtn" class="px-4 py-2 bg-indigo-600 text-white rounded">Submit</button>
@@ -93,14 +89,11 @@
 </div>
 </div>
 
-<!-- SCRIPT -->
 <script>
-/* ------------------ CONFIG ------------------ */
 const API_URL = "https://script.google.com/macros/s/AKfycbzEVBQPZaW1JFFhKZQvfnmp6DRcrPeimvyo3-i-g1iSt5J3izOAHuLjXrPRSGmBJIpfjg/exec";
 let products = [];
 let counter = 0;
 
-/* ------------------ HELPERS ------------------ */
 function formatRibuan(n) {
   if (!n) return "";
   return Number(n).toLocaleString("id-ID");
@@ -109,28 +102,18 @@ function parseNumber(s) {
   if (!s) return 0;
   return Number(String(s).replace(/[^\d.-]/g, "")) || 0;
 }
-function showError(msg) {
-  document.getElementById("errorBox").textContent = msg;
-}
-function clearError() {
-  document.getElementById("errorBox").textContent = "";
-}
-function setMsg(msg) {
-  document.getElementById("msg").textContent = msg;
-}
+function showError(msg) { document.getElementById("errorBox").textContent = msg; }
+function clearError() { document.getElementById("errorBox").textContent = ""; }
+function setMsg(msg) { document.getElementById("msg").textContent = msg; }
 
-/* ------------------ LOAD MASTER ------------------ */
 async function loadProducts() {
   try {
     const res = await fetch(API_URL + "?action=getMaster", { cache: "no-store" });
     const data = await res.json();
     products = data || [];
-  } catch (err) {
-    showError("Gagal memuat produk: " + err);
-  }
+  } catch (err) { showError("Gagal memuat produk: " + err); }
 }
 
-/* ------------------ ADD ITEM ROW ------------------ */
 function addItemRow() {
   counter++;
   const rowId = "row_" + counter;
@@ -167,7 +150,6 @@ function addItemRow() {
   namaInput.addEventListener("input", () => {
     const q = namaInput.value.toLowerCase();
     suggestions.innerHTML = "";
-
     if (!q) return;
 
     const matches = products.filter(p => p.nama.toLowerCase().includes(q)).slice(0, 8);
@@ -181,7 +163,8 @@ function addItemRow() {
         namaInput.value = m.nama;
         kodeInput.value = m.kode;
         stokInput.value = m.stok;
-        hargaInput.value = formatRibuan(m.harga);
+        hargaInput.value = formatRibuan(m.harga); // tampil ke user
+        hargaInput.dataset.value = m.harga;      // simpan angka asli
 
         suggestions.innerHTML = "";
         recalcRow();
@@ -212,8 +195,9 @@ function addItemRow() {
   /* ROW TOTAL */
   function recalcRow() {
     const j = parseNumber(jumlahInput.value);
-    const h = parseNumber(hargaInput.value);
+    const h = parseNumber(hargaInput.dataset.value || hargaInput.value); // pakai angka asli
     totalInput.value = j * h ? formatRibuan(j * h) : "";
+    totalInput.dataset.value = j * h; // simpan angka asli
   }
 
   /* REMOVE ROW */
@@ -223,14 +207,13 @@ function addItemRow() {
   };
 }
 
-/* ------------------ GRAND TOTAL ------------------ */
+/* GRAND TOTAL */
 function recalcGrandTotal() {
   let total = 0;
   let kodePrev = "";
 
   document.querySelectorAll("#itemsBody tr").forEach(tr => {
-    total += parseNumber(tr.querySelector(".total").value);
-
+    total += parseNumber(tr.querySelector(".total").dataset.value || tr.querySelector(".total").value);
     const kode = tr.querySelector(".kode").value;
     if (!kodePrev && kode) kodePrev = kode;
   });
@@ -239,7 +222,7 @@ function recalcGrandTotal() {
   document.getElementById("kodeOdooPreview").value = kodePrev;
 }
 
-/* ------------------ SUBMIT ------------------ */
+/* SUBMIT */
 document.getElementById("submitBtn").onclick = async () => {
   const namaUser = document.getElementById("namaUser").value;
   const tanggal = document.getElementById("tanggal").value;
@@ -254,8 +237,8 @@ document.getElementById("submitBtn").onclick = async () => {
     kode: r.querySelector(".kode").value,
     jumlah: parseNumber(r.querySelector(".jumlah").value),
     stok: parseNumber(r.querySelector(".stok").value),
-    harga: parseNumber(r.querySelector(".harga").value),
-    total: parseNumber(r.querySelector(".total").value)
+    harga: parseNumber(r.querySelector(".harga").dataset.value || r.querySelector(".harga").value),
+    total: parseNumber(r.querySelector(".total").dataset.value || r.querySelector(".total").value)
   }));
 
   const formData = new FormData();
@@ -279,7 +262,7 @@ document.getElementById("submitBtn").onclick = async () => {
   }
 };
 
-/* ------------------ INIT ------------------ */
+/* INIT */
 (async function init() {
   await loadProducts();
   addItemRow();
