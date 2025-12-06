@@ -11,13 +11,29 @@
 .input-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .suggestion { cursor: pointer; padding: 6px; }
 .suggestion:hover { background: #f3f4f6; }
+/* Loading indicator */
+#loadingIndicator {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #111827;
+  display: none;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
 </style>
 </head>
 
 <body class="bg-gradient-to-b from-teal-50 to-white min-h-screen p-6">
 
-<div class="max-w-4xl mx-auto space-y-6">
+<!-- Loading Indicator -->
+<div id="loadingIndicator">Sedang Memuat Data...</div>
 
+<div class="max-w-4xl mx-auto space-y-6">
 <div class="bg-white p-6 rounded-xl shadow">
 
 <h1 class="text-2xl font-semibold mb-2">Form Input</h1>
@@ -25,7 +41,6 @@
 
 <!-- FORM HEADER -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-
   <div>
     <label class="block text-sm font-medium text-gray-700">Nama</label>
     <input id="namaUser" type="text" class="mt-1 p-2 border rounded w-full"
@@ -90,34 +105,35 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzEVBQPZaW1JFFhKZQvfnmp6DRcrPeimvyo3-i-g1iSt5J3izOAHuLjXrPRSGmBJIpfjg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyt7lbv7XpZ0mhwRN-VAHIeaWnrJeu0ddm4jx4fN5vgdjEuE6JgqLStRxTuxsNMeidAwA/exec";
 let products = [];
 let counter = 0;
 
-function formatRibuan(n) {
-  if (!n) return "";
-  return Number(n).toLocaleString("id-ID");
-}
-function parseNumber(s) {
-  if (!s) return 0;
-  return Number(String(s).replace(/[^\d.-]/g, "")) || 0;
-}
+function formatRibuan(n) { if (!n) return ""; return Number(n).toLocaleString("id-ID"); }
+function parseNumber(s) { if (!s) return 0; return Number(String(s).replace(/[^\d.-]/g, "")) || 0; }
 function showError(msg) { document.getElementById("errorBox").textContent = msg; }
 function clearError() { document.getElementById("errorBox").textContent = ""; }
 function setMsg(msg) { document.getElementById("msg").textContent = msg; }
 
+function showLoading() { document.getElementById("loadingIndicator").style.display = "block"; }
+function hideLoading() { document.getElementById("loadingIndicator").style.display = "none"; }
+
 async function loadProducts() {
   try {
+    showLoading();
     const res = await fetch(API_URL + "?action=getMaster", { cache: "no-store" });
     const data = await res.json();
     products = data || [];
-  } catch (err) { showError("Gagal memuat produk: " + err); }
+  } catch (err) {
+    showError("Gagal memuat produk: " + err);
+  } finally {
+    hideLoading();
+  }
 }
 
 function addItemRow() {
   counter++;
   const rowId = "row_" + counter;
-
   const tr = document.createElement("tr");
   tr.id = rowId;
 
@@ -151,26 +167,21 @@ function addItemRow() {
     const q = namaInput.value.toLowerCase();
     suggestions.innerHTML = "";
     if (!q) return;
-
     const matches = products.filter(p => p.nama.toLowerCase().includes(q)).slice(0, 8);
-
     matches.forEach(m => {
       const div = document.createElement("div");
       div.className = "suggestion";
       div.textContent = `${m.nama} (${m.kode})`;
-
       div.onclick = () => {
         namaInput.value = m.nama;
         kodeInput.value = m.kode;
         stokInput.value = m.stok;
-        hargaInput.value = formatRibuan(m.harga); // tampil ke user
-        hargaInput.dataset.value = m.harga;      // simpan angka asli
-
+        hargaInput.value = formatRibuan(m.harga);
+        hargaInput.dataset.value = m.harga;
         suggestions.innerHTML = "";
         recalcRow();
         recalcGrandTotal();
       };
-
       suggestions.appendChild(div);
     });
   });
@@ -179,45 +190,38 @@ function addItemRow() {
   jumlahInput.addEventListener("input", () => {
     const j = parseNumber(jumlahInput.value);
     const s = parseNumber(stokInput.value);
-
     if (j > s) {
       showError(`Jumlah (${j}) melebihi stok (${s})!`);
       jumlahInput.value = "";
       totalInput.value = "";
       return;
     }
-
     clearError();
     recalcRow();
     recalcGrandTotal();
   });
 
-  /* ROW TOTAL */
   function recalcRow() {
     const j = parseNumber(jumlahInput.value);
-    const h = parseNumber(hargaInput.dataset.value || hargaInput.value); // pakai angka asli
+    const h = parseNumber(hargaInput.dataset.value || hargaInput.value);
     totalInput.value = j * h ? formatRibuan(j * h) : "";
-    totalInput.dataset.value = j * h; // simpan angka asli
+    totalInput.dataset.value = j * h;
   }
 
-  /* REMOVE ROW */
   tr.querySelector(".removeBtn").onclick = () => {
     tr.remove();
     recalcGrandTotal();
   };
 }
 
-/* GRAND TOTAL */
 function recalcGrandTotal() {
   let total = 0;
   let kodePrev = "";
-
   document.querySelectorAll("#itemsBody tr").forEach(tr => {
     total += parseNumber(tr.querySelector(".total").dataset.value || tr.querySelector(".total").value);
     const kode = tr.querySelector(".kode").value;
     if (!kodePrev && kode) kodePrev = kode;
   });
-
   document.getElementById("grandTotal").value = formatRibuan(total);
   document.getElementById("kodeOdooPreview").value = kodePrev;
 }
@@ -228,6 +232,9 @@ document.getElementById("submitBtn").onclick = async () => {
   const tanggal = document.getElementById("tanggal").value;
   const kegiatan = document.getElementById("kegiatan").value;
   const kodeBudget = document.getElementById("kodeBudget").value;
+
+  if (!namaUser) { alert("Nama PIC harus diisi!"); return; }
+  if (!tanggal) { alert("Tanggal harus diisi!"); return; }
 
   const rows = [...document.querySelectorAll("#itemsBody tr")];
   if (!rows.length) return alert("Tambahkan minimal 1 item.");
@@ -250,13 +257,20 @@ document.getElementById("submitBtn").onclick = async () => {
   formData.append("items", JSON.stringify(items));
 
   try {
-    await fetch(API_URL + "?action=submit", {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
-    });
-
+    await fetch(API_URL + "?action=submit", { method: "POST", body: formData, mode: "no-cors" });
     setMsg("Berhasil terkirim.");
+
+    // Reset form & tabel
+    document.getElementById("namaUser").value = "";
+    document.getElementById("tanggal").value = "";
+    document.getElementById("kegiatan").value = "";
+    document.getElementById("kodeBudget").value = "";
+    document.getElementById("itemsBody").innerHTML = "";
+    addItemRow();
+    setMsg(""); // hilangkan notifikasi
+    document.getElementById("grandTotal").value = "";
+    document.getElementById("kodeOdooPreview").value = "";
+
   } catch (err) {
     showError("Gagal kirim: " + err);
   }
