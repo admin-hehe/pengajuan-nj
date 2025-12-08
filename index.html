@@ -7,6 +7,36 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+/* Perbaiki layout td agar semua konsisten 2 kolom di mobile */
+@media (max-width: 640px) {
+  #itemsTable tbody tr td {
+    display: grid !important;
+    grid-template-columns: 120px 1fr !important;
+    align-items: center;
+  }
+  
+  /* Mobile: posisikan tombol Hapus ke kanan */
+@media (max-width: 640px) {
+  #itemsTable tbody tr td[data-label="Aksi"] {
+    display: flex !important;
+    justify-content: flex-end !important;
+    grid-template-columns: none !important; /* hilangkan grid */
+  }
+}
+
+
+  /* Label Nama Produk harus jadi di kolom kiri */
+  #itemsTable tbody tr td[data-label="Nama Produk"] {
+    grid-template-columns: 120px 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #itemsTable tbody tr td[data-label="Aksi"]::before {
+    content: "" !important;
+    display: none !important;
+  }
+}
   /* Loader untuk tombol submit */
   .loader {
     border: 2px solid #fff;
@@ -54,24 +84,21 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
 
-  /* -------------------- MOBILE: stacked table rows (card view) -------------------- */
+  /* -------------------- MOBILE VIEW -------------------- */
   @media (max-width: 640px) {
-    /* hide header row */
     #itemsTable thead { 
       display: none; 
     }
 
-    /* make each row a block card */
     #itemsTable tbody tr {
       display: block;
       margin-bottom: 12px;
-      border: 1px solid #e5e7eb; /* gray-200 */
+      border: 1px solid #e5e7eb;
       padding: 10px;
       border-radius: 8px;
       background: white;
     }
 
-    /* each cell becomes a flex row with label + value */
     #itemsTable tbody tr td {
       display: flex;
       justify-content: space-between;
@@ -80,33 +107,44 @@
       border: none;
     }
 
-    /* show label from data-label attribute */
     #itemsTable tbody tr td::before {
       content: attr(data-label);
       font-weight: 600;
-      color: #374151; /* gray-700 */
+      color: #374151;
       margin-right: 8px;
       flex: 0 0 auto;
       width: 40%;
       max-width: 48%;
     }
 
-    /* make input take remaining space */
-    #itemsTable tbody tr td > input,
-    #itemsTable tbody tr td > .suggestions {
-      flex: 1 1 auto;
-      width: 100%;
-    }
+    /* Pastikan input Nama Produk tidak memuai */
+	#itemsTable tbody tr td[data-label="Nama Produk"] input {
+	  width: 100% !important;
+	  flex: none !important;
+	}
 
-    /* make action button align right */
+	#itemsTable tbody tr td[data-label="Nama Produk"] .suggestions {
+	  width: 100% !important;
+	}
+
+
     #itemsTable tbody tr td:last-child {
       justify-content: flex-end;
     }
 
-    /* reduce padding for overall container so cards fit */
     body, .max-w-4xl {
       padding-left: 12px;
       padding-right: 12px;
+    }
+
+    /* === PERBAIKAN 1: Hilangkan label "Aksi" pada mobile === */
+    #itemsTable tbody tr td[data-label="Aksi"]::before {
+      content: "";
+    }
+
+    /* === PERBAIKAN 2: Samakan panjang input Nama Produk === */
+    #itemsTable tbody tr td[data-label="Nama Produk"] input {
+      min-width: 100%;
     }
   }
 </style>
@@ -175,7 +213,7 @@
             <th class="p-2 text-left">Stok</th>
             <th class="p-2 text-left">Harga</th>
             <th class="p-2 text-left">Total</th>
-            <th class="p-2 text-left">Aksi</th>
+            <th data-column="aksi" class="px-4 py-2 hidden md:table-cell">Aksi</th>
           </tr>
         </thead>
         <tbody id="itemsBody"></tbody>
@@ -203,6 +241,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyt7lbv7XpZ0mhwRN-VAHIe
 let products = [];
 let counter = 0;
 
+/* ——— format & parse ——— */
 function formatRibuan(n) {
   if (!n && n !== 0) return "";
   return Number(n).toLocaleString("id-ID");
@@ -213,26 +252,16 @@ function parseNumber(s) {
   return Number(String(s).replace(/[^\d.-]/g, "")) || 0;
 }
 
-function showError(msg) {
-  document.getElementById("errorBox").textContent = msg;
-}
+/* ——— message ——— */
+function showError(msg) { document.getElementById("errorBox").textContent = msg; }
+function clearError() { document.getElementById("errorBox").textContent = ""; }
+function setMsg(msg) { document.getElementById("msg").textContent = msg; }
 
-function clearError() {
-  document.getElementById("errorBox").textContent = "";
-}
+/* ——— loading ——— */
+function showLoading() { document.getElementById("loadingIndicator").style.display = "block"; }
+function hideLoading() { document.getElementById("loadingIndicator").style.display = "none"; }
 
-function setMsg(msg) {
-  document.getElementById("msg").textContent = msg;
-}
-
-function showLoading() {
-  document.getElementById("loadingIndicator").style.display = "block";
-}
-
-function hideLoading() {
-  document.getElementById("loadingIndicator").style.display = "none";
-}
-
+/* ——— load product master ——— */
 async function loadProducts() {
   try {
     showLoading();
@@ -246,6 +275,7 @@ async function loadProducts() {
   }
 }
 
+/* ——— add row ——— */
 function addItemRow() {
   counter++;
   const rowId = "row_" + counter;
@@ -253,11 +283,10 @@ function addItemRow() {
   const tr = document.createElement("tr");
   tr.id = rowId;
 
-  /* Note: added data-label attributes for mobile */
   tr.innerHTML = `
     <td class="p-2" data-label="Nama Produk">
-      <input type="text" class="namaProduk w-full p-1 border rounded" placeholder="nama/kode produk" />
-      <div class="suggestions text-xs text-gray-600 mt-1"></div>
+      <input type="text" class="namaProduk w-full p-2 border rounded" placeholder="nama/kode produk" />
+      <div class="suggestions text-xs text-gray-600 mt-1 w-full" ></div>
     </td>
 
     <td class="p-2" data-label="Kode">
@@ -326,7 +355,6 @@ function addItemRow() {
     });
   });
 
-  /* VALIDASI JUMLAH */
   jumlahInput.addEventListener("input", () => {
     const j = parseNumber(jumlahInput.value);
     const s = parseNumber(stokInput.value);
@@ -356,6 +384,7 @@ function addItemRow() {
   };
 }
 
+/* ——— grand total ——— */
 function recalcGrandTotal() {
   let total = 0;
   let kodePrev = "";
@@ -374,7 +403,7 @@ function recalcGrandTotal() {
   document.getElementById("kodeOdooPreview").value = kodePrev;
 }
 
-/* SUBMIT */
+/* ——— submit ——— */
 document.getElementById("submitBtn").onclick = async () => {
   clearError();
   setMsg("");
@@ -386,13 +415,11 @@ document.getElementById("submitBtn").onclick = async () => {
   const kegiatan = document.getElementById("kegiatan").value.trim();
   const kodeBudget = document.getElementById("kodeBudget").value.trim();
 
-  // VALIDASI HEADER
   if (!namaUser) return showError("Nama PIC wajib diisi.");
   if (!tanggal) return showError("Tanggal wajib diisi.");
   if (!kegiatan) return showError("Kegiatan wajib diisi.");
   if (!kodeBudget) return showError("Kode Budget wajib diisi.");
 
-  // VALIDASI ITEM
   const rows = [...document.querySelectorAll("#itemsBody tr")];
   if (!rows.length) return showError("Minimal 1 item harus ditambahkan.");
 
@@ -402,7 +429,7 @@ document.getElementById("submitBtn").onclick = async () => {
     const jumlah = parseNumber(r.querySelector(".jumlah").value);
     const stok = parseNumber(r.querySelector(".stok").value);
     const harga = parseNumber(
-      r.querySelector(".harga").dataset.value ||
+      r.querySelector(".harga").dataset.value || 
       r.querySelector(".harga").value
     );
 
@@ -413,12 +440,10 @@ document.getElementById("submitBtn").onclick = async () => {
     if (!harga) return showError("Harga produk tidak valid.");
   }
 
-  // TAMPILKAN LOADER DI TOMBOL
   btn.disabled = true;
   const oldLabel = btn.innerHTML;
   btn.innerHTML = `<span class="loader"></span> Mengirim...`;
 
-  // SIAPKAN DATA
   const items = rows.map(r => ({
     nama: r.querySelector(".namaProduk").value,
     kode: r.querySelector(".kode").value,
@@ -449,11 +474,9 @@ document.getElementById("submitBtn").onclick = async () => {
       mode: "no-cors"
     });
 
-    // BERHASIL -> tampilkan notifikasi
     setMsg("Berhasil terkirim.");
     setTimeout(() => setMsg(""), 3000);
 
-    // RESET FORM
     document.getElementById("namaUser").value = "";
     document.getElementById("tanggal").value = "";
     document.getElementById("kegiatan").value = "";
@@ -471,7 +494,7 @@ document.getElementById("submitBtn").onclick = async () => {
   }
 };
 
-/* INIT */
+/* ——— init ——— */
 (async function init() {
   await loadProducts();
   addItemRow();
