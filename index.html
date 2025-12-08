@@ -1,506 +1,475 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Form Input</title>
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style>
-/* Perbaiki layout td agar semua konsisten 2 kolom di mobile */
-@media (max-width: 640px) {
-  #itemsTable tbody tr td {
-    display: grid !important;
-    grid-template-columns: 120px 1fr !important;
-    align-items: center;
-  }
-  
-  /* Mobile: posisikan tombol Hapus ke kanan */
-@media (max-width: 640px) {
-  #itemsTable tbody tr td[data-label="Aksi"] {
-    display: flex !important;
-    justify-content: flex-end !important;
-    grid-template-columns: none !important; /* hilangkan grid */
-  }
-}
-
-
-  /* Label Nama Produk harus jadi di kolom kiri */
-  #itemsTable tbody tr td[data-label="Nama Produk"] {
-    grid-template-columns: 120px 1fr !important;
-  }
-}
-
-@media (max-width: 640px) {
-  #itemsTable tbody tr td[data-label="Aksi"]::before {
-    content: "" !important;
-    display: none !important;
-  }
-}
-  /* Loader untuk tombol submit */
-  .loader {
-    border: 2px solid #fff;
-    border-top: 2px solid transparent;
-    border-radius: 50%;
-    width: 14px;
-    height: 14px;
-    animation: spin 0.6s linear infinite;
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .input-number::-webkit-outer-spin-button,
-  .input-number::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .suggestion {
-    cursor: pointer;
-    padding: 6px;
-  }
-
-  .suggestion:hover {
-    background: #f3f4f6;
-  }
-
-  /* Loading indicator */
-  #loadingIndicator {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    background: #f3f4f6;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    color: #111827;
-    display: none;
-    z-index: 1000;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  }
-
-  /* -------------------- MOBILE VIEW -------------------- */
-  @media (max-width: 640px) {
-    #itemsTable thead { 
-      display: none; 
-    }
-
-    #itemsTable tbody tr {
-      display: block;
-      margin-bottom: 12px;
-      border: 1px solid #e5e7eb;
-      padding: 10px;
-      border-radius: 8px;
-      background: white;
-    }
-
-    #itemsTable tbody tr td {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      border: none;
-    }
-
-    #itemsTable tbody tr td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      color: #374151;
-      margin-right: 8px;
-      flex: 0 0 auto;
-      width: 40%;
-      max-width: 48%;
-    }
-
-    /* Pastikan input Nama Produk tidak memuai */
-	#itemsTable tbody tr td[data-label="Nama Produk"] input {
-	  width: 100% !important;
-	  flex: none !important;
-	}
-
-	#itemsTable tbody tr td[data-label="Nama Produk"] .suggestions {
-	  width: 100% !important;
-	}
-
-
-    #itemsTable tbody tr td:last-child {
-      justify-content: flex-end;
-    }
-
-    body, .max-w-4xl {
-      padding-left: 12px;
-      padding-right: 12px;
-    }
-
-    /* === PERBAIKAN 1: Hilangkan label "Aksi" pada mobile === */
-    #itemsTable tbody tr td[data-label="Aksi"]::before {
-      content: "";
-    }
-
-    /* === PERBAIKAN 2: Samakan panjang input Nama Produk === */
-    #itemsTable tbody tr td[data-label="Nama Produk"] input {
-      min-width: 100%;
-    }
-  }
-</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Form Input</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* Modal Style */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 24px; border-radius: 8px; width: 90%; max-width: 400px; }
+        /* Mobile Table Optimization */
+        @media (max-width: 640px) { 
+            #itemTable thead { display: none; } 
+            #itemTable tr { display: block; margin-bottom: 12px; border: 1px solid #e5e7eb; padding: 10px; border-radius: 8px; } 
+            #itemTable td { display: flex; justify-content: space-between; padding: 6px 0; border: none; } 
+            #itemTable td::before { content: attr(data-label); font-weight: 600; color: #374151; margin-right: 8px; }
+            #itemTable tfoot tr td:first-child { justify-content: flex-end; }
+        }
+    </style>
 </head>
-
-<body class="bg-gradient-to-b from-teal-50 to-white min-h-screen p-6">
-
-<!-- Loading Indicator -->
-<div id="loadingIndicator">Sedang Memuat Data...</div>
+<body class="bg-gray-100 min-h-screen p-6">
 
 <div class="max-w-4xl mx-auto space-y-6">
-  <div class="bg-white p-6 rounded-xl shadow">
-    <h1 class="text-2xl font-semibold mb-2">Form Input</h1>
-    <p class="text-sm text-gray-600 mb-4">
-      Masukkan data acara dan produk. Tambah banyak item, total akan dihitung otomatis.
-    </p>
+    <div id="loadingIndicator" class="fixed top-4 right-4 bg-yellow-100 p-2 rounded text-sm text-yellow-700 hidden">Memuat data...</div>
+    <div id="messageBox" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-100 p-2 rounded text-sm text-green-700 hidden"></div>
+    <div id="errorBox" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 p-2 rounded text-sm text-red-700 hidden"></div>
 
-    <!-- FORM HEADER -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Nama</label>
-        <input id="namaUser" type="text" class="mt-1 p-2 border rounded w-full"
-               placeholder="Nama PIC / Penanggung Jawab" />
-      </div>
+    <h1 class="text-3xl font-bold mb-4 text-gray-800">Form Input</h1>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-        <input id="tanggal" type="date" class="mt-1 p-2 border rounded w-full" />
-      </div>
+    <div class="bg-white p-6 rounded-xl shadow space-y-4">
+        <h2 class="text-xl font-semibold border-b pb-2 mb-4">Data</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="namaUser" class="block text-sm font-medium text-gray-700">Nama PIC</label>
+                <input type="text" id="namaUser" class="mt-1 p-2 border rounded w-full" required />
+            </div>
+            <div>
+                <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal</label>
+                <input type="date" id="tanggal" class="mt-1 p-2 border rounded w-full" required />
+            </div>
+        </div>
+        
+        <div>
+            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Kegiatan</label>
+            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full" required />
+        </div>
 
-      <div class="md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700">Kegiatan</label>
-        <input id="kegiatan" type="text" class="mt-1 p-2 border rounded w-full"
-               placeholder="Contoh: NJ Alokasi KOL" />
-      </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="inputBrand" class="block text-sm font-medium text-gray-700">Brand</label>
+                <select id="inputBrand" class="mt-1 p-2 border rounded w-full" required>
+                    <option value="">Pilih Brand</option>
+                    </select>
+            </div>
+            <div>
+                <label for="kodeBudget" class="block text-sm font-medium text-gray-700">Kode Budget</label>
+                <input type="text" id="kodeBudget" class="mt-1 p-2 border rounded w-full" placeholder="Cth: BC-123.. / 123456" required />
+            </div>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Kode Budget</label>
-        <input id="kodeBudget" type="text" class="mt-1 p-2 border rounded w-full"
-               placeholder="BC1 - 1234.... / 136..." />
-      </div>
+    <div class="bg-white p-6 rounded-xl shadow space-y-4">
+        <h2 class="text-xl font-semibold border-b pb-2 mb-4">Item Produk</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+                <label for="inputNamaProduk" class="block text-sm font-medium text-gray-700">Nama Produk</label>
+                <input 
+                    type="text" 
+                    id="inputNamaProduk" 
+                    list="masterProductsDatalist" 
+                    class="mt-1 p-2 border rounded w-full" 
+                    placeholder="Ketik nama produk..."
+                />
+                <datalist id="masterProductsDatalist"></datalist>
+                <input type="hidden" id="inputKodeProduk">
+            </div>
+            
+            <div class="flex space-x-2">
+                <div class="flex-grow">
+                    <label for="inputJumlah" class="block text-sm font-medium text-gray-700">Jumlah</label>
+                    <input type="number" id="inputJumlah" class="mt-1 p-2 border rounded w-full" value="0" min="1" />
+                </div>
+                <div class="w-1/2">
+                    <label class="block text-sm font-medium text-gray-700">Stok</label>
+                    <p id="stokOdooDisplay" class="mt-1 p-2 text-sm bg-gray-100 border rounded w-full text-center font-semibold text-gray-600">0</p>
+                    <input type="hidden" id="inputStokOdoo">
+                </div>
+            </div>
+            
+            <div>
+                <label for="inputHarga" class="block text-sm font-medium text-gray-700">Harga Satuan</label>
+                <input type="text" id="inputHarga" class="mt-1 p-2 border rounded w-full bg-gray-100" readonly />
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center pt-2">
+            <p class="text-lg font-bold">Total Item: <span id="itemTotalDisplay" class="text-indigo-600">0,00</span></p>
+            <button id="addItemBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled>
+                Tambahkan Item
+            </button>
+        </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Grand Total</label>
-        <input id="grandTotal" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50"
-               readonly />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Kode Preview</label>
-        <input id="kodeOdooPreview" type="text" class="mt-1 p-2 border rounded w-full bg-gray-50"
-               readonly />
-      </div>
+        <div class="mt-6 overflow-x-auto">
+            <table class="min-w-full text-sm border-collapse" id="itemTable">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 text-left">Produk (Kode)</th>
+                        <th class="p-2 text-left">Jml</th>
+                        <th class="p-2 text-left">Harga</th>
+                        <th class="p-2 text-right">Total</th>
+                        <th class="p-2 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="itemBody">
+                    <tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada item ditambahkan.</td></tr>
+                </tbody>
+                <tfoot class="bg-gray-200">
+                    <tr>
+                        <td colspan="3" class="p-2 text-right font-bold">GRAND TOTAL</td>
+                        <td id="grandTotalDisplay" data-label="GRAND TOTAL" class="p-2 text-right font-bold text-green-700">0,00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <div class="pt-4 border-t mt-6">
+            <button id="submitBtn" class="w-full px-4 py-3 bg-green-600 text-white text-lg rounded-lg hover:bg-green-700" disabled>
+                Submit
+            </button>
+        </div>
     </div>
-
-    <!-- TABLE -->
-    <div class="overflow-x-auto mb-4">
-      <table class="w-full text-sm" id="itemsTable">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2 text-left">Nama Produk</th>
-            <th class="p-2 text-left">Kode</th>
-            <th class="p-2 text-left">Jumlah</th>
-            <th class="p-2 text-left">Stok</th>
-            <th class="p-2 text-left">Harga</th>
-            <th class="p-2 text-left">Total</th>
-            <th data-column="aksi" class="px-4 py-2 hidden md:table-cell">Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="itemsBody"></tbody>
-      </table>
-    </div>
-
-    <div class="flex items-center gap-2 mb-4">
-      <button id="addItemBtn" type="button" class="px-4 py-2 bg-green-500 text-white rounded">
-        + Tambah Item
-      </button>
-
-      <button id="submitBtn" class="px-4 py-2 bg-indigo-600 text-white rounded">
-        Submit
-      </button>
-
-      <div id="msg" class="text-sm text-green-700 ml-4"></div>
-    </div>
-
-    <div id="errorBox" class="text-sm text-red-600"></div>
-  </div>
 </div>
 
+
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxN3smutkaxQqMZkkefMtZ3pamM-yWSKJGkT2RGCt10Qxte5jg0LUCl7noKwCt3nMY4qA/exec";
-let products = [];
-let counter = 0;
+    // ====================================================================
+    // !!! PENTING: GANTI INI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA !!!
+    const API_URL = "https://script.google.com/macros/s/AKfycbwHaGTIVYBsI8PGjF_egBpGkx7gE1_8lSK3Hmll97eMQq0JIU1Ie8rJsY9AGM6WexuLUA/exec"; 
+    // ====================================================================
 
-/* ——— format & parse ——— */
-function formatRibuan(n) {
-  if (!n && n !== 0) return "";
-  return Number(n).toLocaleString("id-ID");
-}
+    let masterProducts = []; 
+    let addedItems = [];
+    let currentGrandTotal = 0;
 
-function parseNumber(s) {
-  if (!s) return 0;
-  return Number(String(s).replace(/[^\d.-]/g, "")) || 0;
-}
-
-/* ——— message ——— */
-function showError(msg) { document.getElementById("errorBox").textContent = msg; }
-function clearError() { document.getElementById("errorBox").textContent = ""; }
-function setMsg(msg) { document.getElementById("msg").textContent = msg; }
-
-/* ——— loading ——— */
-function showLoading() { document.getElementById("loadingIndicator").style.display = "block"; }
-function hideLoading() { document.getElementById("loadingIndicator").style.display = "none"; }
-
-/* ——— load product master ——— */
-async function loadProducts() {
-  try {
-    showLoading();
-    const res = await fetch(API_URL + "?action=getMaster", { cache: "no-store" });
-    const data = await res.json();
-    products = data || [];
-  } catch (err) {
-    showError("Gagal memuat produk: " + err);
-  } finally {
-    hideLoading();
-  }
-}
-
-/* ——— add row ——— */
-function addItemRow() {
-  counter++;
-  const rowId = "row_" + counter;
-
-  const tr = document.createElement("tr");
-  tr.id = rowId;
-
-  tr.innerHTML = `
-    <td class="p-2" data-label="Nama Produk">
-      <input type="text" class="namaProduk w-full p-2 border rounded" placeholder="nama/kode produk" />
-      <div class="suggestions text-xs text-gray-600 mt-1 w-full" ></div>
-    </td>
-
-    <td class="p-2" data-label="Kode">
-      <input type="text" class="kode w-full p-1 border rounded bg-gray-50" readonly />
-    </td>
-
-    <td class="p-2" data-label="Jumlah">
-      <input type="number" class="jumlah w-full p-1 border rounded" min="1" />
-    </td>
-
-    <td class="p-2" data-label="Stok">
-      <input type="text" class="stok w-full p-1 border rounded bg-gray-50" readonly />
-    </td>
-
-    <td class="p-2" data-label="Harga">
-      <input type="text" class="harga w-full p-1 border rounded bg-gray-50" readonly />
-    </td>
-
-    <td class="p-2" data-label="Total">
-      <input type="text" class="total w-full p-1 border rounded bg-gray-50" readonly />
-    </td>
-
-    <td class="p-2" data-label="Aksi">
-      <button class="removeBtn px-3 py-1 bg-red-500 text-white rounded">Hapus</button>
-    </td>
-  `;
-
-  document.getElementById("itemsBody").appendChild(tr);
-
-  const namaInput = tr.querySelector(".namaProduk");
-  const kodeInput = tr.querySelector(".kode");
-  const jumlahInput = tr.querySelector(".jumlah");
-  const stokInput = tr.querySelector(".stok");
-  const hargaInput = tr.querySelector(".harga");
-  const totalInput = tr.querySelector(".total");
-  const suggestions = tr.querySelector(".suggestions");
-
-  /* AUTOCOMPLETE */
-  namaInput.addEventListener("input", () => {
-    const q = namaInput.value.toLowerCase();
-    suggestions.innerHTML = "";
-    if (!q) return;
-
-    const matches = products
-      .filter(p => p.nama.toLowerCase().includes(q))
-      .slice(0, 8);
-
-    matches.forEach(m => {
-      const div = document.createElement("div");
-      div.className = "suggestion";
-      div.textContent = `${m.nama} (${m.kode})`;
-
-      div.onclick = () => {
-        namaInput.value = m.nama;
-        kodeInput.value = m.kode;
-        stokInput.value = m.stok;
-        hargaInput.value = formatRibuan(m.harga);
-        hargaInput.dataset.value = m.harga;
-        suggestions.innerHTML = "";
-
-        recalcRow();
-        recalcGrandTotal();
-      };
-
-      suggestions.appendChild(div);
-    });
-  });
-
-  jumlahInput.addEventListener("input", () => {
-    const j = parseNumber(jumlahInput.value);
-    const s = parseNumber(stokInput.value);
-
-    if (j > s) {
-      showError(`Jumlah (${j}) melebihi stok (${s})!`);
-      jumlahInput.value = "";
-      totalInput.value = "";
-      return;
+    /* ——— UTILS (Perbaikan Numerik) ——— */
+    
+    // Memformat float ke string IDR (10000.00 -> 10.000,00)
+    function formatRibuan(n) { 
+        if (n === null || n === undefined || isNaN(n)) return "0,00";
+        const roundedN = Math.round(n * 100) / 100;
+        return new Intl.NumberFormat('id-ID', { 
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2 
+        }).format(roundedN);
+    }
+    
+    // Mem-parse string IDR (10.000,00) ke float (10000.00)
+    function parseNumber(s) { 
+        if (!s) return 0;
+        let str = String(s);
+        str = str.replace(/\./g, '');
+        str = str.replace(/,/g, '.');
+        return parseFloat(str) || 0; 
     }
 
-    clearError();
-    recalcRow();
-    recalcGrandTotal();
-  });
+    /* ——— MESSAGE & LOADING ——— */
+    function showLoader(msg = "Memproses...") { 
+        const indicator = document.getElementById("loadingIndicator");
+        indicator.textContent = msg;
+        indicator.classList.remove("hidden"); 
+    }
+    function hideLoader() { document.getElementById("loadingIndicator").classList.add("hidden"); }
 
-  function recalcRow() {
-    const j = parseNumber(jumlahInput.value);
-    const h = parseNumber(hargaInput.dataset.value || hargaInput.value);
-    totalInput.value = j * h ? formatRibuan(j * h) : "";
-    totalInput.dataset.value = j * h;
-  }
+    function showMessage(msg) {
+        const box = document.getElementById("messageBox");
+        box.textContent = msg;
+        box.classList.remove("hidden");
+        setTimeout(() => box.classList.add("hidden"), 3000);
+    }
+    function showError(msg) {
+        const box = document.getElementById("errorBox");
+        box.textContent = msg;
+        box.classList.remove("hidden");
+        setTimeout(() => box.classList.add("hidden"), 5000);
+    }
 
-  tr.querySelector(".removeBtn").onclick = () => {
-    tr.remove();
-    recalcGrandTotal();
-  };
-}
+    /* ——— MASTER DATA LOGIC ——— */
 
-/* ——— grand total ——— */
-function recalcGrandTotal() {
-  let total = 0;
-  let kodePrev = "";
+    async function loadMasterData() {
+        showLoader("Memuat data master...");
+        try {
+            // Load Produk Master
+            const resProd = await fetch(API_URL + "?action=getMaster", { cache: "no-store" }); 
+            const dataProd = await resProd.json();
+            if (dataProd.error) throw new Error("Produk Master: " + dataProd.error);
+            masterProducts = dataProd; 
+            populateDatalist();
 
-  document.querySelectorAll("#itemsBody tr").forEach(tr => {
-    total += parseNumber(
-      tr.querySelector(".total").dataset.value ||
-      tr.querySelector(".total").value
-    );
+            // Load Brand List
+            const resBrand = await fetch(API_URL + "?action=getBrands", { cache: "no-store" }); 
+            const dataBrand = await resBrand.json();
+            if (dataBrand.error) throw new Error("Brand List: " + dataBrand.error);
+            populateBrandDropdown(dataBrand);
 
-    const kode = tr.querySelector(".kode").value;
-    if (!kodePrev && kode) kodePrev = kode;
-  });
+        } catch (err) {
+            showError("Gagal memuat Master Data: " + err.message);
+        } finally {
+            hideLoader();
+        }
+    }
 
-  document.getElementById("grandTotal").value = formatRibuan(total);
-  document.getElementById("kodeOdooPreview").value = kodePrev;
-}
+    function populateDatalist() {
+        const datalist = document.getElementById('masterProductsDatalist');
+        datalist.innerHTML = ''; 
+        
+        masterProducts.forEach(product => { 
+            if (product.nama) { 
+                const option = document.createElement('option');
+                option.value = product.nama;
+                datalist.appendChild(option);
+            }
+        });
+    }
 
-/* ——— submit ——— */
-document.getElementById("submitBtn").onclick = async () => {
-  clearError();
-  setMsg("");
+    function populateBrandDropdown(brands) {
+        const select = document.getElementById('inputBrand');
+        brands.forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            select.appendChild(option);
+        });
+    }
 
-  const btn = document.getElementById("submitBtn");
+    /* ——— ITEM INPUT LOGIC ——— */
 
-  const namaUser = document.getElementById("namaUser").value.trim();
-  const tanggal = document.getElementById("tanggal").value;
-  const kegiatan = document.getElementById("kegiatan").value.trim();
-  const kodeBudget = document.getElementById("kodeBudget").value.trim();
+    const inputNamaProduk = document.getElementById('inputNamaProduk');
+    const inputJumlah = document.getElementById('inputJumlah');
+    const inputHarga = document.getElementById('inputHarga');
+    const itemTotalDisplay = document.getElementById('itemTotalDisplay');
+    const stokOdooDisplay = document.getElementById('stokOdooDisplay');
+    const addItemBtn = document.getElementById('addItemBtn');
 
-  if (!namaUser) return showError("Nama PIC wajib diisi.");
-  if (!tanggal) return showError("Tanggal wajib diisi.");
-  if (!kegiatan) return showError("Kegiatan wajib diisi.");
-  if (!kodeBudget) return showError("Kode Budget wajib diisi.");
+    // Event listeners untuk kalkulasi otomatis
+    inputNamaProduk.addEventListener('input', updateItemInput);
+    inputJumlah.addEventListener('input', updateItemInput);
 
-  const rows = [...document.querySelectorAll("#itemsBody tr")];
-  if (!rows.length) return showError("Minimal 1 item harus ditambahkan.");
+    function updateItemInput() {
+        const nama = inputNamaProduk.value.trim();
+        const jumlah = parseFloat(inputJumlah.value) || 0;
+        
+        const selectedProduct = masterProducts.find(p => p.nama.toLowerCase() === nama.toLowerCase());
 
-  for (const r of rows) {
-    const nama = r.querySelector(".namaProduk").value.trim();
-    const kode = r.querySelector(".kode").value.trim();
-    const jumlah = parseNumber(r.querySelector(".jumlah").value);
-    const stok = parseNumber(r.querySelector(".stok").value);
-    const harga = parseNumber(
-      r.querySelector(".harga").dataset.value || 
-      r.querySelector(".harga").value
-    );
+        let harga = 0;
+        let kode = "";
+        let stok = 0; // Menggunakan 0 sebagai default stok
+        
+        if (selectedProduct) {
+            harga = parseFloat(selectedProduct.harga) || 0; 
+            kode = selectedProduct.kode || "";
+            stok = parseFloat(selectedProduct.stok) || 0;
+        }
+        
+        // Simpan data mentah ke input hidden dan display stok
+        document.getElementById('inputKodeProduk').value = kode;
+        document.getElementById('inputStokOdoo').value = stok;
+        stokOdooDisplay.textContent = stok.toLocaleString('id-ID'); // Tampilkan stok dengan format ribuan
 
-    if (!nama) return showError("Nama produk tidak boleh kosong.");
-    if (!kode) return showError("Kode produk tidak boleh kosong.");
-    if (!jumlah || jumlah < 1) return showError("Jumlah minimal 1.");
-    if (jumlah > stok) return showError(`Jumlah melebihi stok (${stok}).`);
-    if (!harga) return showError("Harga produk tidak valid.");
-  }
+        // Tampilkan Harga dan Total
+        inputHarga.value = formatRibuan(harga); 
+        const total = jumlah * harga;
+        itemTotalDisplay.textContent = formatRibuan(total);
 
-  btn.disabled = true;
-  const oldLabel = btn.innerHTML;
-  btn.innerHTML = `<span class="loader"></span> Mengirim...`;
+        // Aktifkan tombol jika data valid dan jumlah tidak melebihi stok (jika stok > 0)
+        let stokValid = (stok > 0 && jumlah <= stok) || stok === 0; // Jika stok 0, kita asumsikan bisa diinput
+        
+        if (selectedProduct && jumlah > 0 && total > 0 && stokValid) {
+            addItemBtn.disabled = false;
+        } else {
+            addItemBtn.disabled = true;
+            if (!stokValid) {
+                showError("Jumlah melebihi stok yang tersedia (" + stok + ").");
+            }
+        }
+    }
 
-  const items = rows.map(r => ({
-    nama: r.querySelector(".namaProduk").value,
-    kode: r.querySelector(".kode").value,
-    jumlah: parseNumber(r.querySelector(".jumlah").value),
-    stok: parseNumber(r.querySelector(".stok").value),
-    harga: parseNumber(
-      r.querySelector(".harga").dataset.value ||
-      r.querySelector(".harga").value
-    ),
-    total: parseNumber(
-      r.querySelector(".total").dataset.value ||
-      r.querySelector(".total").value
-    )
-  }));
+    document.getElementById('addItemBtn').addEventListener('click', () => {
+        const nama = inputNamaProduk.value.trim();
+        const jumlah = parseFloat(inputJumlah.value) || 0;
+        const harga = parseNumber(inputHarga.value);
+        const kode = document.getElementById('inputKodeProduk').value;
+        const stok = document.getElementById('inputStokOdoo').value;
+        const total = jumlah * harga; // Hitung ulang total
 
-  const formData = new FormData();
-  formData.append("action", "submit");
-  formData.append("namaUser", namaUser);
-  formData.append("tanggal", tanggal);
-  formData.append("kegiatan", kegiatan);
-  formData.append("kodeBudget", kodeBudget);
-  formData.append("items", JSON.stringify(items));
+        if (total === 0 || nama === "") {
+            showError("Nama produk dan jumlah harus valid.");
+            return;
+        }
 
-  try {
-    await fetch(API_URL + "?action=submit", {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
+        const newItem = {
+            kode: kode,
+            nama: nama,
+            jumlah: jumlah,
+            stok: stok,
+            harga: harga,
+            total: Math.round(total * 100) / 100 // Pastikan total dibulatkan
+        };
+
+        addedItems.push(newItem);
+        renderItemTable();
+        resetItemInputs();
     });
 
-    setMsg("Berhasil terkirim.");
-    setTimeout(() => setMsg(""), 3000);
+    function removeItem(index) {
+        if (confirm("Yakin ingin menghapus item ini?")) {
+            addedItems.splice(index, 1);
+            renderItemTable();
+        }
+    }
 
-    document.getElementById("namaUser").value = "";
-    document.getElementById("tanggal").value = "";
-    document.getElementById("kegiatan").value = "";
-    document.getElementById("kodeBudget").value = "";
-    document.getElementById("itemsBody").innerHTML = "";
-    document.getElementById("grandTotal").value = "";
-    document.getElementById("kodeOdooPreview").value = "";
-    addItemRow();
+    function calculateGrandTotal() {
+        currentGrandTotal = addedItems.reduce((sum, item) => sum + item.total, 0);
+        currentGrandTotal = Math.round(currentGrandTotal * 100) / 100;
+        document.getElementById('grandTotalDisplay').textContent = formatRibuan(currentGrandTotal);
+        
+        // Aktifkan tombol submit jika ada item
+        document.getElementById('submitBtn').disabled = addedItems.length === 0;
+    }
 
-  } catch (err) {
-    showError("Gagal kirim: " + err);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = oldLabel;
-  }
-};
+    function renderItemTable() {
+        const body = document.getElementById('itemBody');
+        body.innerHTML = '';
 
-/* ——— init ——— */
-(async function init() {
-  await loadProducts();
-  addItemRow();
-  document.getElementById("addItemBtn").onclick = addItemRow;
-})();
+        if (addedItems.length === 0) {
+            body.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada item ditambahkan.</td></tr>';
+        } else {
+            addedItems.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td data-label="Produk (Kode)" class="p-2">${item.nama}<br><span class="text-gray-500 text-xs">${item.kode} (Stok: ${item.stok})</span></td>
+                    <td data-label="Jml" class="p-2">${item.jumlah}</td>
+                    <td data-label="Harga" class="p-2">${formatRibuan(item.harga)}</td>
+                    <td data-label="Total" class="p-2 text-right font-semibold">${formatRibuan(item.total)}</td>
+                    <td data-label="Aksi" class="p-2 text-center">
+                        <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700">Hapus</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+        calculateGrandTotal();
+    }
+    
+    function resetItemInputs() {
+        inputNamaProduk.value = '';
+        inputJumlah.value = 0;
+        inputHarga.value = '';
+        itemTotalDisplay.textContent = '0,00';
+        stokOdooDisplay.textContent = '0';
+        document.getElementById('inputKodeProduk').value = '';
+        document.getElementById('inputStokOdoo').value = '0';
+        addItemBtn.disabled = true;
+    }
+
+    /* ——— SUBMIT LOGIC ——— */
+    
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const namaUser = document.getElementById('namaUser').value.trim();
+        const tanggal = document.getElementById('tanggal').value;
+        const kegiatan = document.getElementById('kegiatan').value.trim();
+        const inputBrand = document.getElementById('inputBrand').value;
+        const kodeBudget = document.getElementById('kodeBudget').value.trim();
+        
+        if (!namaUser || !tanggal || !kegiatan || !inputBrand || !kodeBudget) {
+            showError("Semua field header wajib diisi.");
+            return;
+        }
+
+        if (addedItems.length === 0) {
+            showError("Tambahkan minimal satu item produk.");
+            return;
+        }
+        
+        if (!confirm(`Yakin ingin submit transaksi dengan ${addedItems.length} item? Total Rp ${formatRibuan(currentGrandTotal)}`)) {
+            return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        const oldLabel = btn.innerHTML;
+        btn.innerHTML = `<span class="loader"></span> Mohon tunggu...`;
+        btn.disabled = true;
+        
+        // Generate Unique ID (Timestamp + Random)
+	// 1. Ambil tanggal dari input (D) dan format menjadi DDMMYYYY
+        const inputDate = document.getElementById('tanggal').value; // format YYYY-MM-DD
+        const dateObj = new Date(inputDate);
+        
+        // Pastikan tanggal valid
+        if (isNaN(dateObj.getTime())) {
+            showError("Format tanggal tidak valid.");
+            btn.innerHTML = oldLabel;
+            btn.disabled = false;
+            return;
+        }
+
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+        const year = dateObj.getFullYear();
+        const formattedDate = `${day}${month}${year}`; // DDMMYYYY
+        
+        // 2. Buat 5 angka random
+        const randomNum = String(Math.floor(10000 + Math.random() * 90000)); // Angka antara 10000 dan 99999
+        
+        // 3. Gabungkan menjadi format NJ-[5 angka random]-[DDMMYYYY]
+        const uniqueID = `NJ-${randomNum}-${formattedDate}`;
+
+        try {
+            const res = await fetch(API_URL + "?action=submit", {
+                method: "POST",
+                body: new URLSearchParams({
+                    uniqueID: uniqueID,
+                    namaUser: namaUser,
+                    tanggal: tanggal,
+                    kegiatan: kegiatan,
+                    inputBrand: inputBrand,
+                    kodeBudget: kodeBudget,
+                    items: JSON.stringify(addedItems)
+                })
+            });
+            
+            const data = await res.json();
+
+            if (data.error) throw new Error(data.error);
+
+            showMessage(`✅ Transaksi berhasil disubmit! ID: ${data.id}`);
+            
+            // Reset form setelah berhasil
+            document.getElementById('namaUser').value = '';
+            document.getElementById('tanggal').value = '';
+            document.getElementById('kegiatan').value = '';
+            document.getElementById('inputBrand').value = '';
+            document.getElementById('kodeBudget').value = '';
+            addedItems = [];
+            renderItemTable();
+
+        } catch (err) {
+            showError("❌ Gagal submit transaksi: " + err.message);
+        } finally {
+            btn.innerHTML = oldLabel;
+            btn.disabled = false;
+        }
+    });
+
+
+    /* —— INIT —— */
+    (function init() {
+        loadMasterData();
+        renderItemTable();
+        
+        // Set tanggal default hari ini
+        //const today = new Date().toISOString().split('T')[0];
+        //document.getElementById('tanggal').value = today;
+    })();
 </script>
-
 </body>
 </html>
