@@ -7,6 +7,22 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+  /* Loader untuk tombol submit */
+.loader {
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 .input-number::-webkit-outer-spin-button,
 .input-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .suggestion { cursor: pointer; padding: 6px; }
@@ -139,7 +155,7 @@ function addItemRow() {
 
   tr.innerHTML = `
     <td class="p-2">
-      <input type="text" class="namaProduk w-full p-1 border rounded" placeholder="ketik produk..." />
+      <input type="text" class="namaProduk w-full p-1 border rounded" placeholder="nama/kode produk" />
       <div class="suggestions text-xs text-gray-600 mt-1"></div>
     </td>
     <td class="p-2"><input type="text" class="kode w-full p-1 border rounded bg-gray-50" readonly /></td>
@@ -228,17 +244,46 @@ function recalcGrandTotal() {
 
 /* SUBMIT */
 document.getElementById("submitBtn").onclick = async () => {
-  const namaUser = document.getElementById("namaUser").value;
+  clearError();
+  setMsg("");
+
+  const btn = document.getElementById("submitBtn");
+
+  const namaUser = document.getElementById("namaUser").value.trim();
   const tanggal = document.getElementById("tanggal").value;
-  const kegiatan = document.getElementById("kegiatan").value;
-  const kodeBudget = document.getElementById("kodeBudget").value;
+  const kegiatan = document.getElementById("kegiatan").value.trim();
+  const kodeBudget = document.getElementById("kodeBudget").value.trim();
 
-  if (!namaUser) { alert("Nama PIC harus diisi!"); return; }
-  if (!tanggal) { alert("Tanggal harus diisi!"); return; }
+  // VALIDASI HEADER
+  if (!namaUser) return showError("Nama PIC wajib diisi.");
+  if (!tanggal) return showError("Tanggal wajib diisi.");
+  if (!kegiatan) return showError("Kegiatan wajib diisi.");
+  if (!kodeBudget) return showError("Kode Budget wajib diisi.");
 
+  // VALIDASI ITEM
   const rows = [...document.querySelectorAll("#itemsBody tr")];
-  if (!rows.length) return alert("Tambahkan minimal 1 item.");
+  if (!rows.length) return showError("Minimal 1 item harus ditambahkan.");
 
+  for (const r of rows) {
+    const nama = r.querySelector(".namaProduk").value.trim();
+    const kode = r.querySelector(".kode").value.trim();
+    const jumlah = parseNumber(r.querySelector(".jumlah").value);
+    const stok = parseNumber(r.querySelector(".stok").value);
+    const harga = parseNumber(r.querySelector(".harga").dataset.value || r.querySelector(".harga").value);
+
+    if (!nama) return showError("Nama produk tidak boleh kosong.");
+    if (!kode) return showError("Kode produk tidak boleh kosong.");
+    if (!jumlah || jumlah < 1) return showError("Jumlah minimal 1.");
+    if (jumlah > stok) return showError(`Jumlah melebihi stok (${stok}).`);
+    if (!harga) return showError("Harga produk tidak valid.");
+  }
+
+  // TAMPILKAN LOADER DI TOMBOL
+  btn.disabled = true;
+  const oldLabel = btn.innerHTML;
+  btn.innerHTML = `<span class="loader"></span> Mengirim...`;
+
+  // SIAPKAN DATA
   const items = rows.map(r => ({
     nama: r.querySelector(".namaProduk").value,
     kode: r.querySelector(".kode").value,
@@ -258,21 +303,26 @@ document.getElementById("submitBtn").onclick = async () => {
 
   try {
     await fetch(API_URL + "?action=submit", { method: "POST", body: formData, mode: "no-cors" });
-    setMsg("Berhasil terkirim.");
 
-    // Reset form & tabel
+    // BERHASIL -> tampilkan notifikasi
+    setMsg("Berhasil terkirim.");
+    setTimeout(() => setMsg(""), 3000);
+
+    // RESET FORM
     document.getElementById("namaUser").value = "";
     document.getElementById("tanggal").value = "";
     document.getElementById("kegiatan").value = "";
     document.getElementById("kodeBudget").value = "";
     document.getElementById("itemsBody").innerHTML = "";
-    addItemRow();
-    setMsg(""); // hilangkan notifikasi
     document.getElementById("grandTotal").value = "";
     document.getElementById("kodeOdooPreview").value = "";
+    addItemRow();
 
   } catch (err) {
     showError("Gagal kirim: " + err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = oldLabel;
   }
 };
 
