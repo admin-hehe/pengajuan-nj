@@ -8,39 +8,101 @@
 
 <style>
   /* Loader untuk tombol submit */
-.loader {
-  border: 2px solid #fff;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  width: 14px;
-  height: 14px;
-  animation: spin 0.6s linear infinite;
-  display: inline-block;
-  vertical-align: middle;
-}
+  .loader {
+    border: 2px solid #fff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.input-number::-webkit-outer-spin-button,
-.input-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.suggestion { cursor: pointer; padding: 6px; }
-.suggestion:hover { background: #f3f4f6; }
-/* Loading indicator */
-#loadingIndicator {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  background: #f3f4f6;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #111827;
-  display: none;
-  z-index: 1000;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
+  .input-number::-webkit-outer-spin-button,
+  .input-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .suggestion { cursor: pointer; padding: 6px; }
+  .suggestion:hover { background: #f3f4f6; }
+
+  /* Loading indicator */
+  #loadingIndicator {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: #f3f4f6;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #111827;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  /* --------------------
+     MOBILE: stacked table rows (card view)
+     -------------------- */
+  @media (max-width: 640px) {
+    /* hide header row */
+    #itemsTable thead {
+      display: none;
+    }
+    @media (max-width: 640px) {
+  .col-kode { display: none !important; }
+  }
+
+    /* make each row a block card */
+    #itemsTable tbody tr {
+      display: block;
+      margin-bottom: 12px;
+      border: 1px solid #e5e7eb; /* gray-200 */
+      padding: 10px;
+      border-radius: 8px;
+      background: white;
+    }
+
+    /* each cell becomes a flex row with label + value */
+    #itemsTable tbody tr td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border: none;
+    }
+
+    /* show label from data-label attribute */
+    #itemsTable tbody tr td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: #374151; /* gray-700 */
+      margin-right: 8px;
+      flex: 0 0 auto;
+      width: 40%;
+      max-width: 48%;
+    }
+
+    /* make input take remaining space */
+    #itemsTable tbody tr td > input,
+    #itemsTable tbody tr td > .suggestions {
+      flex: 1 1 auto;
+      width: 100%;
+    }
+
+    /* make action button align right */
+    #itemsTable tbody tr td:last-child {
+      justify-content: flex-end;
+    }
+
+    /* reduce padding for overall container so cards fit */
+    body, .max-w-4xl {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  }
 </style>
 </head>
 
@@ -125,7 +187,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyt7lbv7XpZ0mhwRN-VAHIe
 let products = [];
 let counter = 0;
 
-function formatRibuan(n) { if (!n) return ""; return Number(n).toLocaleString("id-ID"); }
+function formatRibuan(n) { if (!n && n !== 0) return ""; return Number(n).toLocaleString("id-ID"); }
 function parseNumber(s) { if (!s) return 0; return Number(String(s).replace(/[^\d.-]/g, "")) || 0; }
 function showError(msg) { document.getElementById("errorBox").textContent = msg; }
 function clearError() { document.getElementById("errorBox").textContent = ""; }
@@ -153,17 +215,28 @@ function addItemRow() {
   const tr = document.createElement("tr");
   tr.id = rowId;
 
+  /* Note: added data-label attributes for mobile stacked layout */
   tr.innerHTML = `
-    <td class="p-2">
+    <td class="p-2" data-label="Nama Produk">
       <input type="text" class="namaProduk w-full p-1 border rounded" placeholder="nama/kode produk" />
       <div class="suggestions text-xs text-gray-600 mt-1"></div>
     </td>
-    <td class="p-2"><input type="text" class="kode w-full p-1 border rounded bg-gray-50" readonly /></td>
-    <td class="p-2"><input type="number" class="jumlah w-full p-1 border rounded" min="1" /></td>
-    <td class="p-2"><input type="text" class="stok w-full p-1 border rounded bg-gray-50" readonly /></td>
-    <td class="p-2"><input type="text" class="harga w-full p-1 border rounded bg-gray-50" readonly /></td>
-    <td class="p-2"><input type="text" class="total w-full p-1 border rounded bg-gray-50" readonly /></td>
-    <td class="p-2">
+    <td class="p-2" data-label="Kode">
+      <input type="text" class="kode w-full p-1 border rounded bg-gray-50" readonly />
+    </td>
+    <td class="p-2" data-label="Jumlah">
+      <input type="number" class="jumlah w-full p-1 border rounded" min="1" />
+    </td>
+    <td class="p-2" data-label="Stok">
+      <input type="text" class="stok w-full p-1 border rounded bg-gray-50" readonly />
+    </td>
+    <td class="p-2" data-label="Harga">
+      <input type="text" class="harga w-full p-1 border rounded bg-gray-50" readonly />
+    </td>
+    <td class="p-2" data-label="Total">
+      <input type="text" class="total w-full p-1 border rounded bg-gray-50" readonly />
+    </td>
+    <td class="p-2" data-label="Aksi">
       <button class="removeBtn px-3 py-1 bg-red-500 text-white rounded">Hapus</button>
     </td>
   `;
