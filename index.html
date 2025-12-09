@@ -3,16 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Form Input</title>
+    <title>Input Rekap Transaksi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .loader {
             border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle;
         }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
         /* Modal Style */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 24px; border-radius: 8px; width: 90%; max-width: 400px; }
+        
         /* Mobile Table Optimization */
         @media (max-width: 640px) { 
             #itemTable thead { display: none; } 
@@ -32,35 +34,35 @@
 
     <h1 class="text-3xl font-bold mb-4 text-gray-800">Form Input</h1>
 
-    <div class="bg-white p-6 rounded-xl shadow space-y-4">
-        <h2 class="text-xl font-semibold border-b pb-2 mb-4">Data</h2>
+    <div class="bg-white p-6 rounded-xl shadow space-y-4" id="headerForm">
+        <h2 class="text-xl font-semibold border-b pb-2 mb-4">Data NJ</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="namaUser" class="block text-sm font-medium text-gray-700">Nama PIC</label>
-                <input type="text" id="namaUser" class="mt-1 p-2 border rounded w-full" required />
+                <input type="text" id="namaUser" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
             </div>
             <div>
                 <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal</label>
-                <input type="date" id="tanggal" class="mt-1 p-2 border rounded w-full" required />
+                <input type="date" id="tanggal" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
             </div>
         </div>
         
         <div>
             <label for="kegiatan" class="block text-sm font-medium text-gray-700">Kegiatan</label>
-            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full" required />
+            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="inputBrand" class="block text-sm font-medium text-gray-700">Brand</label>
-                <select id="inputBrand" class="mt-1 p-2 border rounded w-full" required>
+                <select id="inputBrand" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required>
                     <option value="">Pilih Brand</option>
                     </select>
             </div>
             <div>
                 <label for="kodeBudget" class="block text-sm font-medium text-gray-700">Kode Budget</label>
-                <input type="text" id="kodeBudget" class="mt-1 p-2 border rounded w-full" placeholder="Cth: BC-123.. / 123456" required />
+                <input type="text" id="kodeBudget" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Cth: BA/2025/01" required />
             </div>
         </div>
     </div>
@@ -69,23 +71,24 @@
         <h2 class="text-xl font-semibold border-b pb-2 mb-4">Item Produk</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="md:col-span-2">
+            <div class="md:col-span-2 relative"> 
                 <label for="inputNamaProduk" class="block text-sm font-medium text-gray-700">Nama Produk</label>
                 <input 
                     type="text" 
                     id="inputNamaProduk" 
-                    list="masterProductsDatalist" 
-                    class="mt-1 p-2 border rounded w-full" 
+                    class="mt-1 p-2 border rounded w-full border-gray-300" 
                     placeholder="Ketik nama produk..."
+                    autocomplete="off"
                 />
-                <datalist id="masterProductsDatalist"></datalist>
+                <div id="autocompleteList" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto hidden">
+                    </div>
                 <input type="hidden" id="inputKodeProduk">
             </div>
             
             <div class="flex space-x-2">
                 <div class="flex-grow">
                     <label for="inputJumlah" class="block text-sm font-medium text-gray-700">Jumlah</label>
-                    <input type="number" id="inputJumlah" class="mt-1 p-2 border rounded w-full" value="0" min="1" />
+                    <input type="number" id="inputJumlah" class="mt-1 p-2 border rounded w-full border-gray-300" value="0" min="1" />
                 </div>
                 <div class="w-1/2">
                     <label class="block text-sm font-medium text-gray-700">Stok</label>
@@ -133,7 +136,7 @@
         
         <div class="pt-4 border-t mt-6">
             <button id="submitBtn" class="w-full px-4 py-3 bg-green-600 text-white text-lg rounded-lg hover:bg-green-700" disabled>
-                Submit
+                Submit Transaksi
             </button>
         </div>
     </div>
@@ -202,7 +205,7 @@
             const dataProd = await resProd.json();
             if (dataProd.error) throw new Error("Produk Master: " + dataProd.error);
             masterProducts = dataProd; 
-            populateDatalist();
+            // populateDatalist() dihapus
 
             // Load Brand List
             const resBrand = await fetch(API_URL + "?action=getBrands", { cache: "no-store" }); 
@@ -217,19 +220,6 @@
         }
     }
 
-    function populateDatalist() {
-        const datalist = document.getElementById('masterProductsDatalist');
-        datalist.innerHTML = ''; 
-        
-        masterProducts.forEach(product => { 
-            if (product.nama) { 
-                const option = document.createElement('option');
-                option.value = product.nama;
-                datalist.appendChild(option);
-            }
-        });
-    }
-
     function populateBrandDropdown(brands) {
         const select = document.getElementById('inputBrand');
         brands.forEach(brand => {
@@ -239,10 +229,58 @@
             select.appendChild(option);
         });
     }
+    
+    /* ——— CUSTOM AUTOCOMPLETE LOGIC (iOS FIX) ——— */
+    const inputNamaProduk = document.getElementById('inputNamaProduk');
+    const autocompleteList = document.getElementById('autocompleteList');
+
+    // Event listener untuk inputNamaProduk
+    inputNamaProduk.addEventListener('input', showSuggestions);
+    
+    // Sembunyikan daftar saran saat mengklik di luar
+    document.addEventListener('click', function(e) {
+        if (!inputNamaProduk.contains(e.target) && !autocompleteList.contains(e.target)) {
+            autocompleteList.classList.add('hidden');
+        }
+    });
+
+    function showSuggestions() {
+        const query = inputNamaProduk.value.toLowerCase().trim();
+        autocompleteList.innerHTML = '';
+
+        // Tampilkan saran hanya jika ada minimal 1 karakter
+        if (query.length < 1) {
+            autocompleteList.classList.add('hidden');
+            return;
+        }
+
+        const filteredProducts = masterProducts.filter(p => p.nama.toLowerCase().includes(query));
+
+        if (filteredProducts.length === 0) {
+            autocompleteList.classList.add('hidden');
+            return;
+        }
+        
+        filteredProducts.forEach(product => {
+            const div = document.createElement('div');
+            // Menambahkan padding dan hover effect
+            div.className = 'p-2 cursor-pointer hover:bg-indigo-100 text-sm';
+            div.textContent = product.nama;
+            
+            // Saat saran diklik
+            div.addEventListener('click', function() {
+                inputNamaProduk.value = product.nama;
+                autocompleteList.classList.add('hidden');
+                updateItemInput(); // Panggil fungsi untuk mengisi harga dan stok
+            });
+            autocompleteList.appendChild(div);
+        });
+
+        autocompleteList.classList.remove('hidden');
+    }
 
     /* ——— ITEM INPUT LOGIC ——— */
 
-    const inputNamaProduk = document.getElementById('inputNamaProduk');
     const inputJumlah = document.getElementById('inputJumlah');
     const inputHarga = document.getElementById('inputHarga');
     const itemTotalDisplay = document.getElementById('itemTotalDisplay');
@@ -250,18 +288,20 @@
     const addItemBtn = document.getElementById('addItemBtn');
 
     // Event listeners untuk kalkulasi otomatis
-    inputNamaProduk.addEventListener('input', updateItemInput);
+    // inputNamaProduk sudah ada event 'input' di showSuggestions, tapi kita perlu 'change'
+    inputNamaProduk.addEventListener('change', updateItemInput); 
     inputJumlah.addEventListener('input', updateItemInput);
 
     function updateItemInput() {
         const nama = inputNamaProduk.value.trim();
         const jumlah = parseFloat(inputJumlah.value) || 0;
         
+        // Cari produk berdasarkan nama yang diketik/dipilih
         const selectedProduct = masterProducts.find(p => p.nama.toLowerCase() === nama.toLowerCase());
 
         let harga = 0;
         let kode = "";
-        let stok = 0; // Menggunakan 0 sebagai default stok
+        let stok = 0;
         
         if (selectedProduct) {
             harga = parseFloat(selectedProduct.harga) || 0; 
@@ -272,23 +312,27 @@
         // Simpan data mentah ke input hidden dan display stok
         document.getElementById('inputKodeProduk').value = kode;
         document.getElementById('inputStokOdoo').value = stok;
-        stokOdooDisplay.textContent = stok.toLocaleString('id-ID'); // Tampilkan stok dengan format ribuan
+        stokOdooDisplay.textContent = stok.toLocaleString('id-ID'); // Tampilkan stok
+        stokOdooDisplay.style.color = (stok > 0) ? '#10B981' : '#EF4444'; // Warna Stok
 
         // Tampilkan Harga dan Total
         inputHarga.value = formatRibuan(harga); 
         const total = jumlah * harga;
         itemTotalDisplay.textContent = formatRibuan(total);
 
-        // Aktifkan tombol jika data valid dan jumlah tidak melebihi stok (jika stok > 0)
-        let stokValid = (stok > 0 && jumlah <= stok) || stok === 0; // Jika stok 0, kita asumsikan bisa diinput
+        // Validasi dan Aktifkan tombol
+        let stokValid = (stok > 0 && jumlah <= stok) || stok <= 0; 
         
         if (selectedProduct && jumlah > 0 && total > 0 && stokValid) {
             addItemBtn.disabled = false;
         } else {
             addItemBtn.disabled = true;
-            if (!stokValid) {
-                showError("Jumlah melebihi stok yang tersedia (" + stok + ").");
-            }
+        }
+        
+        // Tambahkan peringatan stok yang lebih jelas
+        if (stok > 0 && jumlah > stok) {
+            showError(`Jumlah (${jumlah}) melebihi stok yang tersedia (${stok}).`);
+            addItemBtn.disabled = true;
         }
     }
 
@@ -370,27 +414,67 @@
         document.getElementById('inputStokOdoo').value = '0';
         addItemBtn.disabled = true;
     }
+    
+    // --- FUNGSI VALIDASI HEADER ---
+    function validateForm() {
+        const requiredInputs = document.querySelectorAll('#headerForm input[required], #headerForm select[required]');
+        let isValid = true;
+        
+        requiredInputs.forEach(input => {
+            if (input.value.trim() === "" || (input.tagName === 'SELECT' && input.value === "")) {
+                input.classList.add('border-red-500', 'ring-red-500');
+                isValid = false;
+            } else {
+                input.classList.remove('border-red-500', 'ring-red-500');
+            }
+        });
+
+        if (addedItems.length === 0) {
+            showError("Tambahkan minimal satu item produk sebelum submit.");
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            // Gulir ke atas agar pesan error terlihat
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showError("Semua field header yang disorot merah wajib diisi!");
+        }
+        
+        return isValid;
+    }
 
     /* ——— SUBMIT LOGIC ——— */
     
     document.getElementById('submitBtn').addEventListener('click', async () => {
+        
+        // JALANKAN VALIDASI HEADER DULU
+        if (!validateForm()) {
+            return;
+        }
+        
         const namaUser = document.getElementById('namaUser').value.trim();
-        const tanggal = document.getElementById('tanggal').value;
+        const tanggal = document.getElementById('tanggal').value; // YYYY-MM-DD
         const kegiatan = document.getElementById('kegiatan').value.trim();
         const inputBrand = document.getElementById('inputBrand').value;
         const kodeBudget = document.getElementById('kodeBudget').value.trim();
         
-        if (!namaUser || !tanggal || !kegiatan || !inputBrand || !kodeBudget) {
-            showError("Semua field header wajib diisi.");
-            return;
-        }
-
-        if (addedItems.length === 0) {
-            showError("Tambahkan minimal satu item produk.");
-            return;
-        }
+        // --- LOGIKA ID OTOMATIS (MENGGUNAKAN DDMMYYYY) ---
         
-        if (!confirm(`Yakin ingin submit transaksi dengan ${addedItems.length} item? Total Rp ${formatRibuan(currentGrandTotal)}`)) {
+        const inputDate = document.getElementById('tanggal').value; 
+        const dateObj = new Date(inputDate + 'T00:00:00'); 
+        
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const formattedDate = `${day}${month}${year}`; // DDMMYYYY
+        
+        const randomNum = String(Math.floor(10000 + Math.random() * 90000));
+        const uniqueID = `NJ-${randomNum}-${formattedDate}`; 
+        
+        // --- AKHIR LOGIKA ID OTOMATIS ---
+
+
+        if (!confirm(`Yakin ingin submit transaksi dengan ID: ${uniqueID} dan ${addedItems.length} item? Total Rp ${formatRibuan(currentGrandTotal)}`)) {
             return;
         }
 
@@ -399,37 +483,14 @@
         btn.innerHTML = `<span class="loader"></span> Mohon tunggu...`;
         btn.disabled = true;
         
-        // Generate Unique ID (Timestamp + Random)
-	// 1. Ambil tanggal dari input (D) dan format menjadi DDMMYYYY
-        const inputDate = document.getElementById('tanggal').value; // format YYYY-MM-DD
-        const dateObj = new Date(inputDate);
         
-        // Pastikan tanggal valid
-        if (isNaN(dateObj.getTime())) {
-            showError("Format tanggal tidak valid.");
-            btn.innerHTML = oldLabel;
-            btn.disabled = false;
-            return;
-        }
-
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
-        const year = dateObj.getFullYear();
-        const formattedDate = `${day}${month}${year}`; // DDMMYYYY
-        
-        // 2. Buat 5 angka random
-        const randomNum = String(Math.floor(10000 + Math.random() * 90000)); // Angka antara 10000 dan 99999
-        
-        // 3. Gabungkan menjadi format NJ-[5 angka random]-[DDMMYYYY]
-        const uniqueID = `NJ-${randomNum}-${formattedDate}`;
-
         try {
             const res = await fetch(API_URL + "?action=submit", {
                 method: "POST",
                 body: new URLSearchParams({
                     uniqueID: uniqueID,
                     namaUser: namaUser,
-                    tanggal: tanggal,
+                    tanggal: tanggal, // KIRIM YYYY-MM-DD KE APPS SCRIPT
                     kegiatan: kegiatan,
                     inputBrand: inputBrand,
                     kodeBudget: kodeBudget,
@@ -445,7 +506,7 @@
             
             // Reset form setelah berhasil
             document.getElementById('namaUser').value = '';
-            document.getElementById('tanggal').value = '';
+            document.getElementById('tanggal').value = ''; // DIKOSONGKAN
             document.getElementById('kegiatan').value = '';
             document.getElementById('inputBrand').value = '';
             document.getElementById('kodeBudget').value = '';
@@ -456,7 +517,8 @@
             showError("❌ Gagal submit transaksi: " + err.message);
         } finally {
             btn.innerHTML = oldLabel;
-            btn.disabled = false;
+            // Jika ada item, biarkan tombol submit aktif (tapi form header kosong)
+            btn.disabled = addedItems.length === 0; 
         }
     });
 
@@ -466,9 +528,7 @@
         loadMasterData();
         renderItemTable();
         
-        // Set tanggal default hari ini
-        //const today = new Date().toISOString().split('T')[0];
-        //document.getElementById('tanggal').value = today;
+        // Tidak ada kode default tanggal, sehingga input kosong secara default
     })();
 </script>
 </body>
