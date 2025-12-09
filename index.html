@@ -48,10 +48,7 @@
             </div>
         </div>
         
-        <div>
-            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Kegiatan</label>
-            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
-        </div>
+        
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -65,6 +62,17 @@
                 <input type="text" id="kodeBudget" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Cth: BA/2025/01" required />
             </div>
         </div>
+        
+        <div>
+            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Kegiatan</label>
+            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
+        </div>
+        
+        <div>
+            <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan</label>
+            <textarea id="keterangan" rows="2" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Tempel stiker tester atau yang lainnya (Opsional)"></textarea>
+        </div>
+        
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow space-y-4">
@@ -146,7 +154,7 @@
 <script>
     // ====================================================================
     // !!! PENTING: GANTI INI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA !!!
-    const API_URL = "https://script.google.com/macros/s/AKfycbwHaGTIVYBsI8PGjF_egBpGkx7gE1_8lSK3Hmll97eMQq0JIU1Ie8rJsY9AGM6WexuLUA/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyCiqAeG8kvLhzhOWYHAiK_aIrEjBHOVhXnwWAYvVj7M8YwAbT5xRNB1tMaieme8_raOw/exec"; 
     // ====================================================================
 
     let masterProducts = []; 
@@ -457,7 +465,7 @@
         const kegiatan = document.getElementById('kegiatan').value.trim();
         const inputBrand = document.getElementById('inputBrand').value;
         const kodeBudget = document.getElementById('kodeBudget').value.trim();
-        
+        const keterangan = document.getElementById('keterangan').value.trim();
         // --- LOGIKA ID OTOMATIS (MENGGUNAKAN DDMMYYYY) ---
         
         const inputDate = document.getElementById('tanggal').value; 
@@ -494,6 +502,7 @@
                     kegiatan: kegiatan,
                     inputBrand: inputBrand,
                     kodeBudget: kodeBudget,
+                    keterangan: keterangan,
                     items: JSON.stringify(addedItems)
                 })
             });
@@ -510,6 +519,7 @@
             document.getElementById('kegiatan').value = '';
             document.getElementById('inputBrand').value = '';
             document.getElementById('kodeBudget').value = '';
+            document.getElementById('keterangan').value = '';
             addedItems = [];
             renderItemTable();
 
