@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Form Input</title>
+    <title>Form Input NJ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .loader {
@@ -43,7 +43,7 @@
                 <input type="text" id="namaUser" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
             </div>
             <div>
-                <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal</label>
+                <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal Kegiatan</label>
                 <input type="date" id="tanggal" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
             </div>
         </div>
@@ -64,7 +64,7 @@
         </div>
         
         <div>
-            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Kegiatan</label>
+            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Nama Kegiatan</label>
             <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
         </div>
         
@@ -96,7 +96,7 @@
             <div class="flex space-x-2">
                 <div class="flex-grow">
                     <label for="inputJumlah" class="block text-sm font-medium text-gray-700">Jumlah</label>
-                    <input type="number" id="inputJumlah" class="mt-1 p-2 border rounded w-full border-gray-300" value="0" min="1" />
+                    <input type="number" id="inputJumlah" class="mt-1 p-2 border rounded w-full border-gray-300" value="" min="1" />
                 </div>
                 <div class="w-1/2">
                     <label class="block text-sm font-medium text-gray-700">Stok</label>
@@ -154,7 +154,7 @@
 <script>
     // ====================================================================
     // !!! PENTING: GANTI INI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA !!!
-    const API_URL = "https://script.google.com/macros/s/AKfycbyCiqAeG8kvLhzhOWYHAiK_aIrEjBHOVhXnwWAYvVj7M8YwAbT5xRNB1tMaieme8_raOw/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbxyGsegr6X2YQYZ_DJCGFhB-1i7FmJJye5ZQhRby84vc1DFkkXznXOt8uI3gnGh34_OMA/exec"; 
     // ====================================================================
 
     let masterProducts = []; 
@@ -414,7 +414,7 @@
     
     function resetItemInputs() {
         inputNamaProduk.value = '';
-        inputJumlah.value = 0;
+        inputJumlah.value = '';
         inputHarga.value = '';
         itemTotalDisplay.textContent = '0,00';
         stokOdooDisplay.textContent = '0';
