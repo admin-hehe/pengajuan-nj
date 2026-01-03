@@ -59,18 +59,18 @@
             </div>
             <div>
                 <label for="kodeBudget" class="block text-sm font-medium text-gray-700">Kode Budget</label>
-                <input type="text" id="kodeBudget" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Cth: BA/2025/01" required />
+                <input type="text" id="kodeBudget" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="WBS Number / Cost Center" required />
             </div>
         </div>
         
         <div>
-            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Nama Kegiatan</label>
-            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
+            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Detail Kegiatan</label>
+            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Barter konten dengan KOL atau lainnya (Wajib)" required />
         </div>
         
         <div>
             <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan</label>
-            <textarea id="keterangan" rows="2" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Tempel stiker tester atau yang lainnya (Opsional)"></textarea>
+            <textarea id="keterangan" rows="2" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Tempel stiker tester atau lainnya (Opsional)"></textarea>
         </div>
         
     </div>
@@ -98,7 +98,7 @@
                     <label for="inputJumlah" class="block text-sm font-medium text-gray-700">Jumlah</label>
                     <input type="number" id="inputJumlah" class="mt-1 p-2 border rounded w-full border-gray-300" value="" min="1" />
                 </div>
-                <div class="w-1/2">
+               <div class="w-1/2 hidden">
                     <label class="block text-sm font-medium text-gray-700">Stok</label>
                     <p id="stokOdooDisplay" class="mt-1 p-2 text-sm bg-gray-100 border rounded w-full text-center font-semibold text-gray-600">0</p>
                     <input type="hidden" id="inputStokOdoo">
