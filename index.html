@@ -6,540 +6,293 @@
     <title>Form Input NJ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .loader {
-            border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        
+        .loader { border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.6s linear infinite; display: inline-block; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* Modal Style */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 24px; border-radius: 8px; width: 90%; max-width: 400px; }
-        
-        /* Mobile Table Optimization */
-        @media (max-width: 640px) { 
-            #itemTable thead { display: none; } 
-            #itemTable tr { display: block; margin-bottom: 12px; border: 1px solid #e5e7eb; padding: 10px; border-radius: 8px; } 
-            #itemTable td { display: flex; justify-content: space-between; padding: 6px 0; border: none; } 
-            #itemTable td::before { content: attr(data-label); font-weight: 600; color: #374151; margin-right: 8px; }
-            #itemTable tfoot tr td:first-child { justify-content: flex-end; }
+        .checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2; stroke-miterlimit: 10; stroke: #4ade80; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+        .checkmark-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+
+        @media (max-width: 768px) {
+            #itemTable thead { display: none; }
+            #itemTable tr { display: block; margin-bottom: 1rem; padding: 1rem; border-radius: 1rem; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); }
+            .dark #itemTable tr { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+            #itemTable td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border: none; text-align: right; }
+            #itemTable td::before { content: attr(data-label); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; color: #64748b; text-align: left; }
+            .dark #itemTable td::before { color: #9ca3af; }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-200 min-h-screen p-4 md:p-10 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
 
-<div class="max-w-4xl mx-auto space-y-6">
-    <div id="loadingIndicator" class="fixed top-4 right-4 bg-yellow-100 p-2 rounded text-sm text-yellow-700 hidden">Memuat data...</div>
-    <div id="messageBox" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-100 p-2 rounded text-sm text-green-700 hidden"></div>
-    <div id="errorBox" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 p-2 rounded text-sm text-red-700 hidden"></div>
+<div class="max-w-5xl mx-auto space-y-6">
+    <div id="loadingIndicator" class="fixed top-5 right-5 bg-indigo-600 text-white px-4 py-2 rounded-full text-[10px] font-bold hidden shadow-lg z-[2000] flex items-center justify-center leading-none">
+    <span class="loader mr-2"></span> 
+    <span class="inline-block mt-[1px]">Sinkronisasi Database</span>
+</div>
 
-    <h1 class="text-3xl font-bold mb-4 text-gray-800">Form Input</h1>
+    <header class="space-y-1">
+        <h1 class="text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase">Form Input NJ</h1>
+    </header>
 
-    <div class="bg-white p-6 rounded-xl shadow space-y-4" id="headerForm">
-        <h2 class="text-xl font-semibold border-b pb-2 mb-4">Data NJ</h2>
-        
+    <div class="bg-white dark:bg-slate-800/50 backdrop-blur-xl p-5 md:p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">PIC Name</label>
+                <input type="text" id="namaUser" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Masukkan nama PIC" />
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Date</label>
+                <input type="date" id="tanggal" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" />
+            </div>
+		<div class="space-y-1">
+		    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Brand</label>
+		    <div class="relative">
+			<select id="inputBrand" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-3 py-3 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none appearance-none cursor-pointer leading-tight">
+			    <option value="" disabled selected>Pilih Brand</option>
+			</select>
+			<div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+			    <svg class="h-3 w-3 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+			    </svg>
+			</div>
+		    </div>
+		</div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="namaUser" class="block text-sm font-medium text-gray-700">Nama PIC</label>
-                <input type="text" id="namaUser" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Cost Center / WBS</label>
+                <input type="text" id="kodeBudget" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. BC2-M0123456" />
             </div>
-            <div>
-                <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal Kegiatan</label>
-                <input type="date" id="tanggal" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required />
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Nama Kegiatan</label>
+                <input type="text" id="kegiatan" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. Alokasi Produk Baru..." />
             </div>
         </div>
-        
-        
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="inputBrand" class="block text-sm font-medium text-gray-700">Brand</label>
-                <select id="inputBrand" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required>
-                    <option value="">Pilih Brand</option>
-                    </select>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700/50">
+            <div class="p-3 space-y-1">
+                <span class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase italic tracking-widest">01. Background</span>
+                <textarea id="background" rows="2" class="v-field w-full bg-transparent border-none text-xs dark:text-white focus:ring-0 outline-none resize-none" placeholder="Latar belakang..."></textarea>
             </div>
-            <div>
-                <label for="kodeBudget" class="block text-sm font-medium text-gray-700">Kode Budget</label>
-                <input type="text" id="kodeBudget" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="WBS Number / Cost Center" required />
+            <div class="p-3 space-y-1 border-y md:border-y-0 md:border-x border-slate-200 dark:border-slate-700/50">
+                <span class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase italic tracking-widest">02. Objective</span>
+                <textarea id="objective" rows="2" class="v-field w-full bg-transparent border-none text-xs dark:text-white focus:ring-0 outline-none resize-none" placeholder="Tujuan kegiatan..."></textarea>
+            </div>
+            <div class="p-3 space-y-1">
+                <span class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase italic tracking-widest">03. Mechanism</span>
+                <textarea id="mekanisme" rows="2" class="v-field w-full bg-transparent border-none text-xs dark:text-white focus:ring-0 outline-none resize-none" placeholder="Mekanisme..."></textarea>
             </div>
         </div>
-        
-        <div>
-            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Detail Kegiatan</label>
-            <input type="text" id="kegiatan" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Barter konten dengan KOL atau lainnya (Wajib)" required />
+
+        <div class="space-y-1">
+            <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Keterangan Tambahan (Opsional)</label>
+            <textarea id="keterangan" rows="1" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. Coret Barcode"></textarea>
         </div>
-        
-        <div>
-            <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan</label>
-            <textarea id="keterangan" rows="2" class="mt-1 p-2 border rounded w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="Tempel stiker tester atau lainnya (Opsional)"></textarea>
-        </div>
-        
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow space-y-4">
-        <h2 class="text-xl font-semibold border-b pb-2 mb-4">Item Produk</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="md:col-span-2 relative"> 
-                <label for="inputNamaProduk" class="block text-sm font-medium text-gray-700">Nama Produk</label>
-                <input 
-                    type="text" 
-                    id="inputNamaProduk" 
-                    class="mt-1 p-2 border rounded w-full border-gray-300" 
-                    placeholder="Ketik nama produk..."
-                    autocomplete="off"
-                />
-                <div id="autocompleteList" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto hidden">
-                    </div>
-                <input type="hidden" id="inputKodeProduk">
+    <div class="bg-white dark:bg-slate-800/50 backdrop-blur-xl p-5 md:p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl">
+        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 dark:text-white">Daftar Produk</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div class="md:col-span-2 relative">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Search Product</label>
+                <input type="text" id="inputNamaProduk" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Cari nama produk..." autocomplete="off" />
+                <div id="autocompleteList" class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden text-xs"></div>
+                <input type="hidden" id="inputKodeProduk"><input type="hidden" id="inputStokOdoo">
             </div>
-            
-            <div class="flex space-x-2">
-                <div class="flex-grow">
-                    <label for="inputJumlah" class="block text-sm font-medium text-gray-700">Jumlah</label>
-                    <input type="number" id="inputJumlah" class="mt-1 p-2 border rounded w-full border-gray-300" value="" min="1" />
-                </div>
-               <div class="w-1/2 hidden">
-                    <label class="block text-sm font-medium text-gray-700">Stok</label>
-                    <p id="stokOdooDisplay" class="mt-1 p-2 text-sm bg-gray-100 border rounded w-full text-center font-semibold text-gray-600">0</p>
-                    <input type="hidden" id="inputStokOdoo">
-                </div>
-            </div>
-            
             <div>
-                <label for="inputHarga" class="block text-sm font-medium text-gray-700">Harga Satuan</label>
-                <input type="text" id="inputHarga" class="mt-1 p-2 border rounded w-full bg-gray-100" readonly />
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Quantity</label>
+                <input type="number" id="inputJumlah" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" min="1" placeholder="0" />
+            </div>
+            <div class="space-y-1 text-right">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Unit Price</label>
+                <div class="text-indigo-600 dark:text-indigo-300 font-mono text-base font-bold" id="inputHargaDisplay">Rp 0,00</div>
             </div>
         </div>
-        
-        <div class="flex justify-between items-center pt-2">
-            <p class="text-lg font-bold">Total Item: <span id="itemTotalDisplay" class="text-indigo-600">0,00</span></p>
-            <button id="addItemBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled>
-                Tambahkan Item
-            </button>
+
+        <div class="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 p-4 bg-slate-100 dark:bg-slate-950/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <div class="text-center md:text-left">
+                <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sub-total Item</p>
+                <p id="itemTotalDisplay" class="text-xl font-black text-slate-900 dark:text-white">0,00</p>
+            </div>
+            <button id="addItemBtn" class="w-full md:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-lg transition-all active:scale-95 disabled:opacity-30 shadow-md" disabled>+ TAMBAH ITEM</button>
         </div>
 
         <div class="mt-6 overflow-x-auto">
-            <table class="min-w-full text-sm border-collapse" id="itemTable">
-                <thead class="bg-gray-100">
+            <table class="w-full border-separate border-spacing-y-1" id="itemTable">
+                <thead class="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">
                     <tr>
-                        <th class="p-2 text-left">Produk (Kode)</th>
-                        <th class="p-2 text-left">Jml</th>
-                        <th class="p-2 text-left">Harga</th>
-                        <th class="p-2 text-right">Total</th>
-                        <th class="p-2 text-center">Aksi</th>
+                        <th class="px-4 py-2 text-left">Product Details</th>
+                        <th class="px-4 py-2 text-center">Qty</th>
+                        <th class="px-4 py-2 text-left">Price</th>
+                        <th class="px-4 py-2 text-right">Total</th>
+                        <th class="px-4 py-2 text-center"></th>
                     </tr>
                 </thead>
-                <tbody id="itemBody">
-                    <tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada item ditambahkan.</td></tr>
+                <tbody id="itemBody" class="text-xs">
+                    <tr><td colspan="5" class="p-6 text-center text-slate-400 italic">No products added.</td></tr>
                 </tbody>
-                <tfoot class="bg-gray-200">
-                    <tr>
-                        <td colspan="3" class="p-2 text-right font-bold">GRAND TOTAL</td>
-                        <td id="grandTotalDisplay" data-label="GRAND TOTAL" class="p-2 text-right font-bold text-green-700">0,00</td>
+                <tfoot>
+                    <tr class="text-slate-900 dark:text-white">
+                        <td colspan="3" class="hidden md:table-cell px-4 py-2 text-right font-black uppercase text-[10px]">Total Pengajuan</td>
+                        <td id="grandTotalDisplay" class="px-4 py-2 text-right text-xl font-black text-emerald-600 dark:text-emerald-400">0,00</td>
                         <td></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
-        
-        <div class="pt-4 border-t mt-6">
-            <button id="submitBtn" class="w-full px-4 py-3 bg-green-600 text-white text-lg rounded-lg hover:bg-green-700" disabled>
-                Submit Transaksi
-            </button>
-        </div>
+
+        <button id="submitBtn" class="w-full mt-6 py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-base font-black rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-30" disabled>SUBMIT TRANSAKSI</button>
     </div>
 </div>
 
+<div id="modalWarning" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 max-w-[280px] w-full text-center shadow-2xl">
+        <h3 class="text-sm font-black text-amber-500 mb-2 uppercase">Data Belum Lengkap!</h3>
+        <p class="text-slate-600 dark:text-slate-400 text-[11px] mb-4">Mohon lengkapi seluruh field sebelum submit.</p>
+        <button onclick="closeModal('modalWarning')" class="w-full py-2.5 bg-slate-800 text-white text-xs font-black rounded-lg hover:bg-slate-700">PAHAM</button>
+    </div>
+</div>
+
+<div id="modalSuccess" class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xl">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-8 max-w-[300px] w-full text-center shadow-2xl">
+        <svg class="w-12 h-12 mx-auto mb-4" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg>
+        <h3 class="text-xl font-black text-slate-900 dark:text-white mb-1 italic">BERHASIL!</h3>
+        <div class="bg-slate-100 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 mb-6">
+            <span id="successID" class="text-sm font-mono font-bold text-slate-900 dark:text-white tracking-widest"></span>
+        </div>
+        <button onclick="location.reload()" class="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-black rounded-lg font-black text-sm hover:opacity-90">SELESAI</button>
+    </div>
+</div>
 
 <script>
-    // ====================================================================
-    // !!! PENTING: GANTI INI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA !!!
-    const API_URL = "https://script.google.com/macros/s/AKfycbxyGsegr6X2YQYZ_DJCGFhB-1i7FmJJye5ZQhRby84vc1DFkkXznXOt8uI3gnGh34_OMA/exec"; 
-    // ====================================================================
-
-    let masterProducts = []; 
-    let addedItems = [];
-    let currentGrandTotal = 0;
-
-    /* ——— UTILS (Perbaikan Numerik) ——— */
-    
-    // Memformat float ke string IDR (10000.00 -> 10.000,00)
-    function formatRibuan(n) { 
-        if (n === null || n === undefined || isNaN(n)) return "0,00";
-        const roundedN = Math.round(n * 100) / 100;
-        return new Intl.NumberFormat('id-ID', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
-        }).format(roundedN);
-    }
-    
-    // Mem-parse string IDR (10.000,00) ke float (10000.00)
-    function parseNumber(s) { 
-        if (!s) return 0;
-        let str = String(s);
-        str = str.replace(/\./g, '');
-        str = str.replace(/,/g, '.');
-        return parseFloat(str) || 0; 
+    // Memastikan tema perangkat terdeteksi oleh Tailwind
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
     }
 
-    /* ——— MESSAGE & LOADING ——— */
-    function showLoader(msg = "Memproses...") { 
-        const indicator = document.getElementById("loadingIndicator");
-        indicator.textContent = msg;
-        indicator.classList.remove("hidden"); 
-    }
-    function hideLoader() { document.getElementById("loadingIndicator").classList.add("hidden"); }
+    const API_URL = "https://script.google.com/macros/s/AKfycbw8a7Ll9AChPGzNaSQoiMi3qGp40woLWHn0dmtj_RjNQYvTro2eGify60ZoZlgNiaTh6A/exec"; 
+    let masterProducts = [], addedItems = [], currentGrandTotal = 0;
 
-    function showMessage(msg) {
-        const box = document.getElementById("messageBox");
-        box.textContent = msg;
-        box.classList.remove("hidden");
-        setTimeout(() => box.classList.add("hidden"), 3000);
-    }
-    function showError(msg) {
-        const box = document.getElementById("errorBox");
-        box.textContent = msg;
-        box.classList.remove("hidden");
-        setTimeout(() => box.classList.add("hidden"), 5000);
-    }
-
-    /* ——— MASTER DATA LOGIC ——— */
+    function formatRibuan(n) { return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2 }).format(n); }
+    function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     async function loadMasterData() {
-        showLoader("Memuat data master...");
+        const indicator = document.getElementById('loadingIndicator');
+        indicator.classList.remove('hidden');
         try {
-            // Load Produk Master
-            const resProd = await fetch(API_URL + "?action=getMaster", { cache: "no-store" }); 
-            const dataProd = await resProd.json();
-            if (dataProd.error) throw new Error("Produk Master: " + dataProd.error);
-            masterProducts = dataProd; 
-            // populateDatalist() dihapus
-
-            // Load Brand List
-            const resBrand = await fetch(API_URL + "?action=getBrands", { cache: "no-store" }); 
-            const dataBrand = await resBrand.json();
-            if (dataBrand.error) throw new Error("Brand List: " + dataBrand.error);
-            populateBrandDropdown(dataBrand);
-
-        } catch (err) {
-            showError("Gagal memuat Master Data: " + err.message);
-        } finally {
-            hideLoader();
-        }
-    }
-
-    function populateBrandDropdown(brands) {
-        const select = document.getElementById('inputBrand');
-        brands.forEach(brand => {
-            const option = document.createElement('option');
-            option.value = brand;
-            option.textContent = brand;
-            select.appendChild(option);
-        });
-    }
-    
-    /* ——— CUSTOM AUTOCOMPLETE LOGIC (iOS FIX) ——— */
-    const inputNamaProduk = document.getElementById('inputNamaProduk');
-    const autocompleteList = document.getElementById('autocompleteList');
-
-    // Event listener untuk inputNamaProduk
-    inputNamaProduk.addEventListener('input', showSuggestions);
-    
-    // Sembunyikan daftar saran saat mengklik di luar
-    document.addEventListener('click', function(e) {
-        if (!inputNamaProduk.contains(e.target) && !autocompleteList.contains(e.target)) {
-            autocompleteList.classList.add('hidden');
-        }
-    });
-
-    function showSuggestions() {
-        const query = inputNamaProduk.value.toLowerCase().trim();
-        autocompleteList.innerHTML = '';
-
-        // Tampilkan saran hanya jika ada minimal 1 karakter
-        if (query.length < 1) {
-            autocompleteList.classList.add('hidden');
-            return;
-        }
-
-        const filteredProducts = masterProducts.filter(p => p.nama.toLowerCase().includes(query));
-
-        if (filteredProducts.length === 0) {
-            autocompleteList.classList.add('hidden');
-            return;
-        }
-        
-        filteredProducts.forEach(product => {
-            const div = document.createElement('div');
-            // Menambahkan padding dan hover effect
-            div.className = 'p-2 cursor-pointer hover:bg-indigo-100 text-sm';
-            div.textContent = product.nama;
-            
-            // Saat saran diklik
-            div.addEventListener('click', function() {
-                inputNamaProduk.value = product.nama;
-                autocompleteList.classList.add('hidden');
-                updateItemInput(); // Panggil fungsi untuk mengisi harga dan stok
+            const [rp, rb] = await Promise.all([ fetch(API_URL+"?action=getMaster"), fetch(API_URL+"?action=getBrands") ]);
+            masterProducts = await rp.json();
+            const brands = await rb.json();
+            brands.forEach(b => { 
+                const o = document.createElement('option'); o.value=b; o.textContent=b; 
+                document.getElementById('inputBrand').appendChild(o); 
             });
-            autocompleteList.appendChild(div);
+        } catch(e) { console.error("Load failed"); }
+        finally { indicator.classList.add('hidden'); }
+    }
+
+    const inNama = document.getElementById('inputNamaProduk'), inJml = document.getElementById('inputJumlah'), autoList = document.getElementById('autocompleteList');
+    
+    inNama.oninput = () => {
+        const q = inNama.value.toLowerCase().trim();
+        autoList.innerHTML = '';
+        if(q.length < 1) { autoList.classList.add('hidden'); return; }
+        masterProducts.filter(p => p.nama.toLowerCase().includes(q)).forEach(p => {
+            const d = document.createElement('div');
+            d.className = 'p-3 cursor-pointer hover:bg-indigo-600 hover:text-white border-b border-slate-100 dark:border-slate-800 transition-colors dark:text-white';
+            d.innerHTML = `<p class="font-bold">${p.nama}</p><p class="text-[9px] opacity-50 uppercase">${p.kode}</p>`;
+            d.onclick = () => { inNama.value = p.nama; autoList.classList.add('hidden'); updateRow(); };
+            autoList.appendChild(d);
         });
+        autoList.classList.remove('hidden');
+    };
 
-        autocompleteList.classList.remove('hidden');
-    }
-
-    /* ——— ITEM INPUT LOGIC ——— */
-
-    const inputJumlah = document.getElementById('inputJumlah');
-    const inputHarga = document.getElementById('inputHarga');
-    const itemTotalDisplay = document.getElementById('itemTotalDisplay');
-    const stokOdooDisplay = document.getElementById('stokOdooDisplay');
-    const addItemBtn = document.getElementById('addItemBtn');
-
-    // Event listeners untuk kalkulasi otomatis
-    // inputNamaProduk sudah ada event 'input' di showSuggestions, tapi kita perlu 'change'
-    inputNamaProduk.addEventListener('change', updateItemInput); 
-    inputJumlah.addEventListener('input', updateItemInput);
-
-    function updateItemInput() {
-        const nama = inputNamaProduk.value.trim();
-        const jumlah = parseFloat(inputJumlah.value) || 0;
-        
-        // Cari produk berdasarkan nama yang diketik/dipilih
-        const selectedProduct = masterProducts.find(p => p.nama.toLowerCase() === nama.toLowerCase());
-
-        let harga = 0;
-        let kode = "";
-        let stok = 0;
-        
-        if (selectedProduct) {
-            harga = parseFloat(selectedProduct.harga) || 0; 
-            kode = selectedProduct.kode || "";
-            stok = parseFloat(selectedProduct.stok) || 0;
-        }
-        
-        // Simpan data mentah ke input hidden dan display stok
-        document.getElementById('inputKodeProduk').value = kode;
-        document.getElementById('inputStokOdoo').value = stok;
-        stokOdooDisplay.textContent = stok.toLocaleString('id-ID'); // Tampilkan stok
-        stokOdooDisplay.style.color = (stok > 0) ? '#10B981' : '#EF4444'; // Warna Stok
-
-        // Tampilkan Harga dan Total
-        inputHarga.value = formatRibuan(harga); 
-        const total = jumlah * harga;
-        itemTotalDisplay.textContent = formatRibuan(total);
-
-        // Validasi dan Aktifkan tombol
-        let stokValid = (stok > 0 && jumlah <= stok) || stok <= 0; 
-        
-        if (selectedProduct && jumlah > 0 && total > 0 && stokValid) {
-            addItemBtn.disabled = false;
-        } else {
-            addItemBtn.disabled = true;
-        }
-        
-        // Tambahkan peringatan stok yang lebih jelas
-        if (stok > 0 && jumlah > stok) {
-            showError(`Jumlah (${jumlah}) melebihi stok yang tersedia (${stok}).`);
-            addItemBtn.disabled = true;
+    function updateRow() {
+        const p = masterProducts.find(x => x.nama.toLowerCase() === inNama.value.trim().toLowerCase());
+        const j = parseFloat(inJml.value) || 0;
+        if(p) {
+            const stokReal = (p.stok === "" || p.stok == null) ? 0 : p.stok;
+            document.getElementById('inputKodeProduk').value = p.kode;
+            document.getElementById('inputStokOdoo').value = stokReal;
+            document.getElementById('inputHargaDisplay').textContent = "Rp " + formatRibuan(p.harga);
+            document.getElementById('itemTotalDisplay').textContent = formatRibuan(p.harga * j);
+            document.getElementById('addItemBtn').disabled = !(j > 0);
         }
     }
+    inJml.oninput = updateRow;
 
-    document.getElementById('addItemBtn').addEventListener('click', () => {
-        const nama = inputNamaProduk.value.trim();
-        const jumlah = parseFloat(inputJumlah.value) || 0;
-        const harga = parseNumber(inputHarga.value);
-        const kode = document.getElementById('inputKodeProduk').value;
-        const stok = document.getElementById('inputStokOdoo').value;
-        const total = jumlah * harga; // Hitung ulang total
+    document.getElementById('addItemBtn').onclick = () => {
+        const p = masterProducts.find(x => x.nama.toLowerCase() === inNama.value.trim().toLowerCase());
+        const stokReal = (p.stok === "" || p.stok == null) ? 0 : p.stok;
+        addedItems.push({ kode: p.kode, nama: p.nama, jumlah: parseFloat(inJml.value), harga: p.harga, total: p.harga * parseFloat(inJml.value), stok: stokReal });
+        renderTable();
+        inNama.value = ''; inJml.value = ''; 
+        document.getElementById('inputHargaDisplay').textContent = "Rp 0,00"; 
+        document.getElementById('itemTotalDisplay').textContent = "0,00";
+        updateRow();
+    };
 
-        if (total === 0 || nama === "") {
-            showError("Nama produk dan jumlah harus valid.");
-            return;
-        }
-
-        const newItem = {
-            kode: kode,
-            nama: nama,
-            jumlah: jumlah,
-            stok: stok,
-            harga: harga,
-            total: Math.round(total * 100) / 100 // Pastikan total dibulatkan
-        };
-
-        addedItems.push(newItem);
-        renderItemTable();
-        resetItemInputs();
-    });
-
-    function removeItem(index) {
-        if (confirm("Yakin ingin menghapus item ini?")) {
-            addedItems.splice(index, 1);
-            renderItemTable();
-        }
-    }
-
-    function calculateGrandTotal() {
-        currentGrandTotal = addedItems.reduce((sum, item) => sum + item.total, 0);
-        currentGrandTotal = Math.round(currentGrandTotal * 100) / 100;
+    function renderTable() {
+        const b = document.getElementById('itemBody');
+        b.innerHTML = addedItems.length ? '' : '<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">No products added.</td></tr>';
+        addedItems.forEach((it, idx) => {
+            const tr = document.createElement('tr');
+            tr.className = "bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-transparent transition-all";
+            tr.innerHTML = `
+                <td class="p-3 rounded-l-xl" data-label="Product"><span class="font-bold text-slate-900 dark:text-white">${it.nama}</span><br><span class="text-[8px] text-slate-400 dark:text-slate-500 uppercase">${it.kode} | Stok: ${it.stok}</span></td>
+                <td class="p-3 text-center font-bold" data-label="Quantity">${it.jumlah}</td>
+                <td class="p-3 font-mono text-slate-500" data-label="Price">${formatRibuan(it.harga)}</td>
+                <td class="p-3 text-right font-black text-indigo-600 dark:text-indigo-400" data-label="Total">${formatRibuan(it.total)}</td>
+                <td class="p-3 text-center rounded-r-xl"><button onclick="addedItems.splice(${idx},1);renderTable();" class="text-slate-400 hover:text-red-400">✕</button></td>
+            `;
+            b.appendChild(tr);
+        });
+        currentGrandTotal = addedItems.reduce((s, i) => s + i.total, 0);
         document.getElementById('grandTotalDisplay').textContent = formatRibuan(currentGrandTotal);
-        
-        // Aktifkan tombol submit jika ada item
-        document.getElementById('submitBtn').disabled = addedItems.length === 0;
+        document.getElementById('submitBtn').disabled = !addedItems.length;
     }
 
-    function renderItemTable() {
-        const body = document.getElementById('itemBody');
-        body.innerHTML = '';
-
-        if (addedItems.length === 0) {
-            body.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada item ditambahkan.</td></tr>';
-        } else {
-            addedItems.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td data-label="Produk (Kode)" class="p-2">${item.nama}<br><span class="text-gray-500 text-xs">${item.kode} (Stok: ${item.stok})</span></td>
-                    <td data-label="Jml" class="p-2">${item.jumlah}</td>
-                    <td data-label="Harga" class="p-2">${formatRibuan(item.harga)}</td>
-                    <td data-label="Total" class="p-2 text-right font-semibold">${formatRibuan(item.total)}</td>
-                    <td data-label="Aksi" class="p-2 text-center">
-                        <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700">Hapus</button>
-                    </td>
-                `;
-                body.appendChild(tr);
-            });
-        }
-        calculateGrandTotal();
-    }
-    
-    function resetItemInputs() {
-        inputNamaProduk.value = '';
-        inputJumlah.value = '';
-        inputHarga.value = '';
-        itemTotalDisplay.textContent = '0,00';
-        stokOdooDisplay.textContent = '0';
-        document.getElementById('inputKodeProduk').value = '';
-        document.getElementById('inputStokOdoo').value = '0';
-        addItemBtn.disabled = true;
-    }
-    
-    // --- FUNGSI VALIDASI HEADER ---
-    function validateForm() {
-        const requiredInputs = document.querySelectorAll('#headerForm input[required], #headerForm select[required]');
+    document.getElementById('submitBtn').onclick = async () => {
         let isValid = true;
-        
-        requiredInputs.forEach(input => {
-            if (input.value.trim() === "" || (input.tagName === 'SELECT' && input.value === "")) {
-                input.classList.add('border-red-500', 'ring-red-500');
-                isValid = false;
-            } else {
-                input.classList.remove('border-red-500', 'ring-red-500');
-            }
+        document.querySelectorAll('.v-field').forEach(f => {
+            if(!f.value.trim()) { f.classList.add('border-red-500'); isValid = false; }
+            else f.classList.remove('border-red-500');
         });
+        
+        if(!isValid) { showModal('modalWarning'); return; }
 
-        if (addedItems.length === 0) {
-            showError("Tambahkan minimal satu item produk sebelum submit.");
-            isValid = false;
-        }
+        const d = new Date(document.getElementById('tanggal').value + 'T00:00:00');
+        const uID = `NJ-${Math.floor(10000+Math.random()*90000)}-${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${d.getFullYear()}`;
         
-        if (!isValid) {
-            // Gulir ke atas agar pesan error terlihat
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            showError("Semua field header yang disorot merah wajib diisi!");
-        }
-        
-        return isValid;
-    }
-
-    /* ——— SUBMIT LOGIC ——— */
-    
-    document.getElementById('submitBtn').addEventListener('click', async () => {
-        
-        // JALANKAN VALIDASI HEADER DULU
-        if (!validateForm()) {
-            return;
-        }
-        
-        const namaUser = document.getElementById('namaUser').value.trim();
-        const tanggal = document.getElementById('tanggal').value; // YYYY-MM-DD
-        const kegiatan = document.getElementById('kegiatan').value.trim();
-        const inputBrand = document.getElementById('inputBrand').value;
-        const kodeBudget = document.getElementById('kodeBudget').value.trim();
-        const keterangan = document.getElementById('keterangan').value.trim();
-        // --- LOGIKA ID OTOMATIS (MENGGUNAKAN DDMMYYYY) ---
-        
-        const inputDate = document.getElementById('tanggal').value; 
-        const dateObj = new Date(inputDate + 'T00:00:00'); 
-        
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
-        const formattedDate = `${day}${month}${year}`; // DDMMYYYY
-        
-        const randomNum = String(Math.floor(10000 + Math.random() * 90000));
-        const uniqueID = `NJ-${randomNum}-${formattedDate}`; 
-        
-        // --- AKHIR LOGIKA ID OTOMATIS ---
-
-
-        if (!confirm(`Yakin ingin submit transaksi dengan ID: ${uniqueID} dan ${addedItems.length} item? Total Rp ${formatRibuan(currentGrandTotal)}`)) {
-            return;
-        }
-
-        const btn = document.getElementById('submitBtn');
-        const oldLabel = btn.innerHTML;
-        btn.innerHTML = `<span class="loader"></span> Mohon tunggu...`;
-        btn.disabled = true;
-        
-        
+        document.getElementById('loadingIndicator').classList.remove('hidden');
         try {
-            const res = await fetch(API_URL + "?action=submit", {
+            await fetch(API_URL + "?action=submit", {
                 method: "POST",
                 body: new URLSearchParams({
-                    uniqueID: uniqueID,
-                    namaUser: namaUser,
-                    tanggal: tanggal, // KIRIM YYYY-MM-DD KE APPS SCRIPT
-                    kegiatan: kegiatan,
-                    inputBrand: inputBrand,
-                    kodeBudget: kodeBudget,
-                    keterangan: keterangan,
-                    items: JSON.stringify(addedItems)
+                    uniqueID: uID, namaUser: document.getElementById('namaUser').value, tanggal: document.getElementById('tanggal').value,
+                    kegiatan: document.getElementById('kegiatan').value, inputBrand: document.getElementById('inputBrand').value,
+                    kodeBudget: document.getElementById('kodeBudget').value, background: document.getElementById('background').value,
+                    objective: document.getElementById('objective').value, mekanisme: document.getElementById('mekanisme').value,
+                    keterangan: document.getElementById('keterangan').value, items: JSON.stringify(addedItems)
                 })
             });
-            
-            const data = await res.json();
+            document.getElementById('successID').textContent = uID;
+            showModal('modalSuccess');
+        } catch (e) { alert("Error connecting to server!"); }
+        finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
+    };
 
-            if (data.error) throw new Error(data.error);
-
-            showMessage(`✅ Transaksi berhasil disubmit! ID: ${data.id}`);
-            
-            // Reset form setelah berhasil
-            document.getElementById('namaUser').value = '';
-            document.getElementById('tanggal').value = ''; // DIKOSONGKAN
-            document.getElementById('kegiatan').value = '';
-            document.getElementById('inputBrand').value = '';
-            document.getElementById('kodeBudget').value = '';
-            document.getElementById('keterangan').value = '';
-            addedItems = [];
-            renderItemTable();
-
-        } catch (err) {
-            showError("❌ Gagal submit transaksi: " + err.message);
-        } finally {
-            btn.innerHTML = oldLabel;
-            // Jika ada item, biarkan tombol submit aktif (tapi form header kosong)
-            btn.disabled = addedItems.length === 0; 
-        }
-    });
-
-
-    /* —— INIT —— */
-    (function init() {
-        loadMasterData();
-        renderItemTable();
-        
-        // Tidak ada kode default tanggal, sehingga input kosong secara default
-    })();
+    window.onload = loadMasterData;
 </script>
 </body>
 </html>
