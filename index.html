@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <title>Form Input NJ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -27,6 +27,41 @@
             #itemTable td::before { content: attr(data-label); font-weight: 700; text-transform: uppercase; font-size: 0.7rem; color: #64748b; text-align: left; }
             .dark #itemTable td::before { color: #9ca3af; }
         }
+        
+/* Menyeragamkan semua input field */
+.v-field, #inputNamaProduk, #inputJumlah {
+    height: 42px !important;
+    box-sizing: border-box;
+}
+
+/* Fix Input Date untuk Chrome & Safari Mobile */
+input[type="date"] {
+    position: relative;
+    -webkit-appearance: none;
+    appearance: none;
+    display: flex;
+    align-items: center;
+}
+
+/* Memastikan teks tanggal rata kiri dan tengah secara vertikal */
+input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+    height: 42px;
+    line-height: 42px;
+    display: flex;
+    align-items: center;
+}
+
+/* Memaksa ikon kalender bawaan ke pojok kanan */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    filter: invert(0.5); /* Supaya ikon terlihat jelas */
+}
+
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-200 min-h-screen p-4 md:p-10 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
@@ -45,18 +80,19 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="space-y-1">
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">PIC Name</label>
-                <input type="text" id="namaUser" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Masukkan nama PIC" />
+                <input type="text" id="namaUser" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Masukkan nama PIC" />
             </div>
-            <div class="space-y-1">
-                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Date</label>
-                <input type="date" id="tanggal" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" />
-            </div>
+<div class="space-y-1">
+    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Date</label>
+    <input type="date" id="tanggal" 
+           class="v-field w-full min-w-0 h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none box-border" />
+</div>
 		<div class="space-y-1">
 		    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Brand</label>
 		    <div class="relative">
-			<select id="inputBrand" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-3 py-3 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none appearance-none cursor-pointer leading-tight">
-			    <option value="" disabled selected>Pilih Brand</option>
-			</select>
+<select id="inputBrand" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-3 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none appearance-none cursor-pointer">
+    <option value="" disabled selected>Pilih Brand</option>
+</select>
 			<div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
 			    <svg class="h-3 w-3 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
@@ -69,11 +105,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-1">
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Cost Center / WBS</label>
-                <input type="text" id="kodeBudget" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. BC2-M0123456" />
+                <input type="text" id="kodeBudget" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. BC2-M0123456" />
             </div>
             <div class="space-y-1">
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Nama Kegiatan</label>
-                <input type="text" id="kegiatan" class="v-field w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. Alokasi Produk Baru..." />
+                <input type="text" id="kegiatan" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. Alokasi Produk Baru..." />
             </div>
         </div>
 
@@ -102,15 +138,15 @@
         <h3 class="text-lg font-bold mb-4 flex items-center gap-2 dark:text-white">Daftar Produk</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div class="md:col-span-2 relative">
+            <div class="md:col-span-2 relative" id="searchContainer">
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Search Product</label>
-                <input type="text" id="inputNamaProduk" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Cari nama produk..." autocomplete="off" />
+                <input type="text" id="inputNamaProduk" class="w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Cari nama produk..." autocomplete="off" />
                 <div id="autocompleteList" class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden text-xs"></div>
                 <input type="hidden" id="inputKodeProduk"><input type="hidden" id="inputStokOdoo">
             </div>
             <div>
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Quantity</label>
-                <input type="number" id="inputJumlah" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" min="1" placeholder="0" />
+                <input type="number" id="inputJumlah" class="w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" min="1" placeholder="0" />
             </div>
             <div class="space-y-1 text-right">
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Unit Price</label>
@@ -203,6 +239,13 @@
 
     const inNama = document.getElementById('inputNamaProduk'), inJml = document.getElementById('inputJumlah'), autoList = document.getElementById('autocompleteList');
     
+    // Penyesuaian 1: Menutup list saat klik area luar
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('searchContainer').contains(e.target)) {
+            autoList.classList.add('hidden');
+        }
+    });
+
     inNama.oninput = () => {
         const q = inNama.value.toLowerCase().trim();
         autoList.innerHTML = '';
@@ -211,7 +254,13 @@
             const d = document.createElement('div');
             d.className = 'p-3 cursor-pointer hover:bg-indigo-600 hover:text-white border-b border-slate-100 dark:border-slate-800 transition-colors dark:text-white';
             d.innerHTML = `<p class="font-bold">${p.nama}</p><p class="text-[9px] opacity-50 uppercase">${p.kode}</p>`;
-            d.onclick = () => { inNama.value = p.nama; autoList.classList.add('hidden'); updateRow(); };
+            d.onclick = () => { 
+                inNama.value = p.nama; 
+                autoList.classList.add('hidden'); 
+                updateRow(); 
+                // Penyesuaian 2: Langsung fokus ke input quantity
+                inJml.focus(); 
+            };
             autoList.appendChild(d);
         });
         autoList.classList.remove('hidden');
@@ -240,6 +289,8 @@
         document.getElementById('inputHargaDisplay').textContent = "Rp 0,00"; 
         document.getElementById('itemTotalDisplay').textContent = "0,00";
         updateRow();
+        // Fokuskan kembali ke pencarian produk setelah menambah item (Opsional untuk kenyamanan)
+        inNama.focus();
     };
 
     function renderTable() {
