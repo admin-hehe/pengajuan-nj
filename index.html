@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <title>Form Input NJ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,6 +12,9 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
         
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         .loader { border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.6s linear infinite; display: inline-block; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
@@ -28,52 +31,47 @@
             .dark #itemTable td::before { color: #9ca3af; }
         }
         
-/* Menyeragamkan semua input field */
-.v-field, #inputNamaProduk, #inputJumlah {
-    height: 42px !important;
-    box-sizing: border-box;
-}
+        .v-field, #inputNamaProduk, #inputJumlah {
+            height: 42px !important;
+            box-sizing: border-box;
+        }
 
-/* Fix Input Date untuk Chrome & Safari Mobile */
-input[type="date"] {
-    position: relative;
-    -webkit-appearance: none;
-    appearance: none;
-    display: flex;
-    align-items: center;
-}
+        input[type="date"] {
+            position: relative;
+            -webkit-appearance: none;
+            appearance: none;
+            display: flex;
+            align-items: center;
+        }
 
-/* Memastikan teks tanggal rata kiri dan tengah secara vertikal */
-input[type="date"]::-webkit-date-and-time-value {
-    text-align: left;
-    height: 42px;
-    line-height: 42px;
-    display: flex;
-    align-items: center;
-}
+        input[type="date"]::-webkit-date-and-time-value {
+            text-align: left;
+            height: 42px;
+            line-height: 42px;
+            display: flex;
+            align-items: center;
+        }
 
-/* Memaksa ikon kalender bawaan ke pojok kanan */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    filter: invert(0.5); /* Supaya ikon terlihat jelas */
-}
-
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            filter: invert(0.5);
+        }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-200 min-h-screen p-4 md:p-10 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
-
-<div class="max-w-5xl mx-auto space-y-6">
-    <div id="loadingIndicator" class="fixed top-5 right-5 bg-indigo-600 text-white px-4 py-2 rounded-full text-[10px] font-bold hidden shadow-lg z-[2000] flex items-center justify-center leading-none">
+<body class="bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-200 min-h-screen p-4 md:pt-6 md:px-10 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
+  <div id="loadingIndicator" class="fixed top-5 right-5 bg-indigo-600 text-white px-4 py-2 rounded-full text-[10px] font-bold hidden shadow-lg z-[2000] flex items-center justify-center leading-none">
     <span class="loader mr-2"></span> 
     <span class="inline-block mt-[1px]">Sinkronisasi Database</span>
-</div>
-
+  </div>
+<div class="max-w-5xl mx-auto space-y-6">
+    
     <header class="space-y-1">
         <h1 class="text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase">Form Input NJ</h1>
+        <p class="text-slate-500 font-medium">System Integrated &bullet; v2.0</p>
     </header>
 
     <div class="bg-white dark:bg-slate-800/50 backdrop-blur-xl p-5 md:p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl space-y-4">
@@ -82,24 +80,23 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">PIC Name</label>
                 <input type="text" id="namaUser" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Masukkan nama PIC" />
             </div>
-<div class="space-y-1">
-    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Date</label>
-    <input type="date" id="tanggal" 
-           class="v-field w-full min-w-0 h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none box-border" />
-</div>
-		<div class="space-y-1">
-		    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Brand</label>
-		    <div class="relative">
-<select id="inputBrand" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-3 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none appearance-none cursor-pointer">
-    <option value="" disabled selected>Pilih Brand</option>
-</select>
-			<div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-			    <svg class="h-3 w-3 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-			    </svg>
-			</div>
-		    </div>
-		</div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Activity Date</label>
+                <input type="date" id="tanggal" class="v-field w-full min-w-0 h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none box-border" />
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Brand</label>
+                <div class="relative">
+                    <select id="inputBrand" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl px-3 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none appearance-none cursor-pointer">
+                        <option value="" disabled selected>Pilih Brand</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                        <svg class="h-3 w-3 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +106,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             </div>
             <div class="space-y-1">
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Nama Kegiatan</label>
-                <input type="text" id="kegiatan" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. Alokasi Produk Baru..." />
+                <input type="text" id="kegiatan" class="v-field w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. Alokasi Beauty Class..." />
             </div>
         </div>
 
@@ -124,23 +121,24 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             </div>
             <div class="p-3 space-y-1">
                 <span class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase italic tracking-widest">03. Mechanism</span>
-                <textarea id="mekanisme" rows="2" class="v-field w-full bg-transparent border-none text-xs dark:text-white focus:ring-0 outline-none resize-none" placeholder="Mekanisme..."></textarea>
+                <textarea id="mekanisme" rows="2" class="v-field w-full bg-transparent border-none text-xs dark:text-white focus:ring-0 outline-none resize-none" placeholder="Mekanisme penggunaan..."></textarea>
             </div>
         </div>
 
         <div class="space-y-1">
-            <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Keterangan Tambahan (Opsional)</label>
+            <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Additional information (Opsional)</label>
             <textarea id="keterangan" rows="1" class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="cth. Coret Barcode"></textarea>
         </div>
     </div>
 
     <div class="bg-white dark:bg-slate-800/50 backdrop-blur-xl p-5 md:p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl">
-        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 dark:text-white">Daftar Produk</h3>
+        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 dark:text-white">Product</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div class="md:col-span-2 relative" id="searchContainer">
                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Search Product</label>
-                <input type="text" id="inputNamaProduk" class="w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Cari nama produk..." autocomplete="off" />
+                <div id="filterChips" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar mt-1"></div>
+                <input type="text" id="inputNamaProduk" class="w-full h-[42px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 border-2 rounded-xl p-2.5 text-sm focus:border-indigo-500 dark:text-white transition-all outline-none" placeholder="Search product name..." autocomplete="off" />
                 <div id="autocompleteList" class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden text-xs"></div>
                 <input type="hidden" id="inputKodeProduk"><input type="hidden" id="inputStokOdoo">
             </div>
@@ -159,7 +157,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                 <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sub-total Item</p>
                 <p id="itemTotalDisplay" class="text-xl font-black text-slate-900 dark:text-white">0,00</p>
             </div>
-            <button id="addItemBtn" class="w-full md:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-lg transition-all active:scale-95 disabled:opacity-30 shadow-md" disabled>+ TAMBAH ITEM</button>
+            <button id="addItemBtn" class="w-full md:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-lg transition-all active:scale-95 disabled:opacity-30 shadow-md" disabled>+ ADD ITEM</button>
         </div>
 
         <div class="mt-6 overflow-x-auto">
@@ -178,7 +176,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                 </tbody>
                 <tfoot>
                     <tr class="text-slate-900 dark:text-white">
-                        <td colspan="3" class="hidden md:table-cell px-4 py-2 text-right font-black uppercase text-[10px]">Total Pengajuan</td>
+                        <td colspan="3" class="hidden md:table-cell px-4 py-2 text-right font-black uppercase text-[10px]">Total Requests</td>
                         <td id="grandTotalDisplay" class="px-4 py-2 text-right text-xl font-black text-emerald-600 dark:text-emerald-400">0,00</td>
                         <td></td>
                     </tr>
@@ -210,13 +208,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 </div>
 
 <script>
-    // Memastikan tema perangkat terdeteksi oleh Tailwind
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.documentElement.classList.add('dark');
     }
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbw8a7Ll9AChPGzNaSQoiMi3qGp40woLWHn0dmtj_RjNQYvTro2eGify60ZoZlgNiaTh6A/exec"; 
-    let masterProducts = [], addedItems = [], currentGrandTotal = 0;
+    const API_URL = "https://script.google.com/macros/s/AKfycbwWL8fXhwT8qdwrBUtvG_kmRi9OoBdr0OkXKOUUCYF8Wz_t-9caujyos-XsloC1r-LYkA/exec"; 
+    let masterProducts = [], addedItems = [], currentGrandTotal = 0, currentBrands = [], activeFilter = "";
+
+    const inNama = document.getElementById('inputNamaProduk'), inJml = document.getElementById('inputJumlah'), autoList = document.getElementById('autocompleteList');
 
     function formatRibuan(n) { return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2 }).format(n); }
     function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -226,45 +225,84 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         const indicator = document.getElementById('loadingIndicator');
         indicator.classList.remove('hidden');
         try {
-            const [rp, rb] = await Promise.all([ fetch(API_URL+"?action=getMaster"), fetch(API_URL+"?action=getBrands") ]);
-            masterProducts = await rp.json();
-            const brands = await rb.json();
-            brands.forEach(b => { 
-                const o = document.createElement('option'); o.value=b; o.textContent=b; 
-                document.getElementById('inputBrand').appendChild(o); 
+            const response = await fetch(API_URL + "?action=getMasterData");
+            const data = await response.json();
+            masterProducts = data.products;
+            currentBrands = data.brands;
+            
+            const brandSelect = document.getElementById('inputBrand');
+            brandSelect.innerHTML = '<option value="" disabled selected>Pilih Brand</option>';
+            currentBrands.forEach(b => { 
+                if(b) {
+                    const o = document.createElement('option'); 
+                    o.value = b; o.textContent = b; 
+                    brandSelect.appendChild(o); 
+                }
             });
-        } catch(e) { console.error("Load failed"); }
-        finally { indicator.classList.add('hidden'); }
+            renderFilterChips(currentBrands);
+        } catch(e) { 
+            console.error("Load failed:", e);
+            alert("Gagal sinkronisasi database!"); 
+        } finally { indicator.classList.add('hidden'); }
     }
 
-    const inNama = document.getElementById('inputNamaProduk'), inJml = document.getElementById('inputJumlah'), autoList = document.getElementById('autocompleteList');
-    
-    // Penyesuaian 1: Menutup list saat klik area luar
-    document.addEventListener('click', (e) => {
-        if (!document.getElementById('searchContainer').contains(e.target)) {
-            autoList.classList.add('hidden');
-        }
-    });
+    function renderFilterChips(brands) {
+        const container = document.getElementById('filterChips');
+        container.innerHTML = '';
+        container.appendChild(createChip("ALL", ""));
+        brands.forEach(brand => { if(brand) container.appendChild(createChip(brand, brand)); });
+    }
 
-    inNama.oninput = () => {
+    function createChip(label, value) {
+        const btn = document.createElement('button');
+        const isActive = activeFilter === value;
+        btn.className = `px-3 py-1 rounded-full text-[9px] font-black uppercase border transition-all whitespace-nowrap ${isActive ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`;
+        btn.textContent = label;
+        btn.onclick = (e) => {
+            e.preventDefault();
+            activeFilter = value;
+            renderFilterChips(currentBrands);
+            inNama.focus();
+            filterSearch();
+        };
+        return btn;
+    }
+
+    function filterSearch() {
         const q = inNama.value.toLowerCase().trim();
         autoList.innerHTML = '';
-        if(q.length < 1) { autoList.classList.add('hidden'); return; }
-        masterProducts.filter(p => p.nama.toLowerCase().includes(q)).forEach(p => {
+        
+        const filtered = masterProducts.filter(p => {
+            const matchFilter = activeFilter ? p.nama.toLowerCase().includes(activeFilter.toLowerCase()) : true;
+            const matchQuery = q ? p.nama.toLowerCase().includes(q) : true;
+            return matchFilter && matchQuery;
+        });
+
+        if (filtered.length === 0) { autoList.classList.add('hidden'); return; }
+
+        filtered.slice(0, 15).forEach(p => {
             const d = document.createElement('div');
             d.className = 'p-3 cursor-pointer hover:bg-indigo-600 hover:text-white border-b border-slate-100 dark:border-slate-800 transition-colors dark:text-white';
-            d.innerHTML = `<p class="font-bold">${p.nama}</p><p class="text-[9px] opacity-50 uppercase">${p.kode} | Stok: ${p.stok}</p>`;
+            d.innerHTML = `<p class="font-bold text-[11px]">${p.nama}</p><p class="text-[9px] opacity-50 uppercase">${p.kode} | Stok: ${p.stok}</p>`;
             d.onclick = () => { 
                 inNama.value = p.nama; 
                 autoList.classList.add('hidden'); 
                 updateRow(); 
-                // Penyesuaian 2: Langsung fokus ke input quantity
                 inJml.focus(); 
             };
             autoList.appendChild(d);
         });
         autoList.classList.remove('hidden');
-    };
+    }
+
+    inNama.oninput = filterSearch;
+    inNama.onfocus = filterSearch;
+
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('searchContainer').contains(e.target)) {
+            autoList.classList.add('hidden');
+        }
+    });
 
     function updateRow() {
         const p = masterProducts.find(x => x.nama.toLowerCase() === inNama.value.trim().toLowerCase());
@@ -282,14 +320,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
     document.getElementById('addItemBtn').onclick = () => {
         const p = masterProducts.find(x => x.nama.toLowerCase() === inNama.value.trim().toLowerCase());
-        const stokReal = (p.stok === "" || p.stok == null) ? 0 : p.stok;
-        addedItems.push({ kode: p.kode, nama: p.nama, jumlah: parseFloat(inJml.value), harga: p.harga, total: p.harga * parseFloat(inJml.value), stok: stokReal });
+        if(!p) return;
+        addedItems.push({ kode: p.kode, nama: p.nama, jumlah: parseFloat(inJml.value), harga: p.harga, total: p.harga * parseFloat(inJml.value), stok: p.stok || 0 });
         renderTable();
         inNama.value = ''; inJml.value = ''; 
         document.getElementById('inputHargaDisplay').textContent = "Rp 0,00"; 
         document.getElementById('itemTotalDisplay').textContent = "0,00";
         updateRow();
-        // Fokuskan kembali ke pencarian produk setelah menambah item (Opsional untuk kenyamanan)
         inNama.focus();
     };
 
@@ -313,35 +350,48 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         document.getElementById('submitBtn').disabled = !addedItems.length;
     }
 
-    document.getElementById('submitBtn').onclick = async () => {
-        let isValid = true;
-        document.querySelectorAll('.v-field').forEach(f => {
-            if(!f.value.trim()) { f.classList.add('border-red-500'); isValid = false; }
-            else f.classList.remove('border-red-500');
+document.getElementById('submitBtn').onclick = async () => {
+    let isValid = true;
+    document.querySelectorAll('.v-field').forEach(f => {
+        if(!f.value.trim()) { f.classList.add('border-red-500'); isValid = false; }
+        else f.classList.remove('border-red-500');
+    });
+    
+    if(!isValid) { showModal('modalWarning'); return; }
+        
+    document.getElementById('loadingIndicator').classList.remove('hidden');
+    
+    try {
+        const response = await fetch(API_URL + "?action=submit", {
+            method: "POST",
+            body: new URLSearchParams({
+                namaUser: document.getElementById('namaUser').value, 
+                tanggal: document.getElementById('tanggal').value,
+                kegiatan: document.getElementById('kegiatan').value, 
+                inputBrand: document.getElementById('inputBrand').value,
+                kodeBudget: document.getElementById('kodeBudget').value, 
+                background: document.getElementById('background').value,
+                objective: document.getElementById('objective').value, 
+                mekanisme: document.getElementById('mekanisme').value,
+                keterangan: document.getElementById('keterangan').value, 
+                items: JSON.stringify(addedItems)
+            })
         });
-        
-        if(!isValid) { showModal('modalWarning'); return; }
 
-        const d = new Date(document.getElementById('tanggal').value + 'T00:00:00');
-        const uID = `NJ-${Math.floor(10000+Math.random()*90000)}-${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${d.getFullYear()}`;
-        
-        document.getElementById('loadingIndicator').classList.remove('hidden');
-        try {
-            await fetch(API_URL + "?action=submit", {
-                method: "POST",
-                body: new URLSearchParams({
-                    uniqueID: uID, namaUser: document.getElementById('namaUser').value, tanggal: document.getElementById('tanggal').value,
-                    kegiatan: document.getElementById('kegiatan').value, inputBrand: document.getElementById('inputBrand').value,
-                    kodeBudget: document.getElementById('kodeBudget').value, background: document.getElementById('background').value,
-                    objective: document.getElementById('objective').value, mekanisme: document.getElementById('mekanisme').value,
-                    keterangan: document.getElementById('keterangan').value, items: JSON.stringify(addedItems)
-                })
-            });
-            document.getElementById('successID').textContent = uID;
+        const resultText = await response.text(); // Ini isinya uID dari server
+
+        if (resultText.startsWith("Error")) {
+            alert(resultText);
+        } else {
+            document.getElementById('successID').textContent = resultText;
             showModal('modalSuccess');
-        } catch (e) { alert("Error connecting to server!"); }
-        finally { document.getElementById('loadingIndicator').classList.add('hidden'); }
-    };
+        }
+    } catch (e) { 
+        alert("Error connecting to server!"); 
+    } finally { 
+        document.getElementById('loadingIndicator').classList.add('hidden'); 
+    }
+};
 
     window.onload = loadMasterData;
 </script>
