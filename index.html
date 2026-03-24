@@ -206,6 +206,17 @@
         <button onclick="location.reload()" class="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-black rounded-lg font-black text-sm hover:opacity-90">SELESAI</button>
     </div>
 </div>
+<div id="modalConfirm" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 whitespace-pre-line">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl scale-95 transition-all">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2" id="confirmTitle">Konfirmasi Stok</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6" id="confirmMessage"></p>
+        
+        <div class="flex gap-3 justify-end">
+            <button id="confirmCancel" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">BATAL</button>
+            <button id="confirmOk" class="px-6 py-2 text-sm font-black bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all uppercase">YAKIN, LANJUT</button>
+        </div>
+    </div>
+</div>
 
 <script>
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -214,16 +225,24 @@
 
     const API_URL = "https://script.google.com/macros/s/AKfycbx57XgYtfrWA6xaZnzYHozBJW7tvaO0s8wYhK6_OpYD-TM6AWaw18hVq-nMkKl1DTmUKQ/exec"; 
     let masterProducts = [], addedItems = [], currentGrandTotal = 0, currentBrands = [], activeFilter = "";
-
-    const inNama = document.getElementById('inputNamaProduk'), inJml = document.getElementById('inputJumlah'), autoList = document.getElementById('autocompleteList');
+    let inNama, inJml, autoList;
 
     function formatRibuan(n) { return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2 }).format(n); }
     function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+    function toggleInputs(disabled) {
+        const inputs = ['namaUser', 'tanggal', 'kegiatan', 'inputBrand', 'inputNamaProduk', 'inputJumlah', 'submitBtn'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = disabled;
+        });
+    }
+
     async function loadMasterData() {
         const indicator = document.getElementById('loadingIndicator');
         indicator.classList.remove('hidden');
+        toggleInputs(true);
         try {
             const response = await fetch(API_URL + "?action=getMasterData");
             const data = await response.json();
@@ -240,6 +259,7 @@
                 }
             });
             renderFilterChips(currentBrands);
+            toggleInputs(false);
         } catch(e) { 
             console.error("Load failed:", e);
             alert("Gagal sinkronisasi database!"); 
@@ -271,15 +291,12 @@
     function filterSearch() {
         const q = inNama.value.toLowerCase().trim();
         autoList.innerHTML = '';
-        
         const filtered = masterProducts.filter(p => {
             const matchFilter = activeFilter ? p.nama.toLowerCase().includes(activeFilter.toLowerCase()) : true;
             const matchQuery = q ? p.nama.toLowerCase().includes(q) : true;
             return matchFilter && matchQuery;
         });
-
         if (filtered.length === 0) { autoList.classList.add('hidden'); return; }
-
         filtered.slice(0, 15).forEach(p => {
             const d = document.createElement('div');
             d.className = 'p-3 cursor-pointer hover:bg-indigo-600 hover:text-white border-b border-slate-100 dark:border-slate-800 transition-colors dark:text-white';
@@ -295,11 +312,9 @@
         autoList.classList.remove('hidden');
     }
 
-    inNama.oninput = filterSearch;
-    inNama.onfocus = filterSearch;
-
     document.addEventListener('click', (e) => {
-        if (!document.getElementById('searchContainer').contains(e.target)) {
+        const container = document.getElementById('searchContainer');
+        if (container && !container.contains(e.target) && autoList) {
             autoList.classList.add('hidden');
         }
     });
@@ -316,19 +331,43 @@
             document.getElementById('addItemBtn').disabled = !(j > 0);
         }
     }
-    inJml.oninput = updateRow;
 
-    document.getElementById('addItemBtn').onclick = () => {
-        const p = masterProducts.find(x => x.nama.toLowerCase() === inNama.value.trim().toLowerCase());
-        if(!p) return;
-        addedItems.push({ kode: p.kode, nama: p.nama, jumlah: parseFloat(inJml.value), harga: p.harga, total: p.harga * parseFloat(inJml.value), stok: p.stok || 0 });
-        renderTable();
-        inNama.value = ''; inJml.value = ''; 
-        document.getElementById('inputHargaDisplay').textContent = "Rp 0,00"; 
-        document.getElementById('itemTotalDisplay').textContent = "0,00";
-        updateRow();
-        inNama.focus();
-    };
+document.getElementById('addItemBtn').onclick = async () => {
+    const p = masterProducts.find(x => x.nama.toLowerCase() === inNama.value.trim().toLowerCase());
+    if(!p) return;
+
+    const inputQty = parseFloat(inJml.value) || 0;
+    const stokTersedia = (p.stok === "" || p.stok == null) ? 0 : parseFloat(p.stok);
+
+    if (inputQty > stokTersedia) {
+        const pesan = `${p.nama}\nStok = ${stokTersedia}\nJumlah Input = ${inputQty}\n\nJumlah stok tidak mencukupi, tetap lanjut?`;
+        const yakin = await customConfirm("Peringatan Stok!", pesan); 
+        
+        if (!yakin) {
+            inJml.focus();
+            return;
+        }
+    }
+
+    addedItems.push({ 
+        kode: p.kode, 
+        nama: p.nama, 
+        jumlah: inputQty, 
+        harga: p.harga, 
+        total: p.harga * inputQty, 
+        stok: p.stok || 0 
+    });
+
+    renderTable();
+    
+    inNama.value = ''; 
+    inJml.value = ''; 
+    document.getElementById('inputHargaDisplay').textContent = "Rp 0,00"; 
+    document.getElementById('itemTotalDisplay').textContent = "0,00";
+    
+    updateRow();
+    inNama.focus();
+};
 
     function renderTable() {
         const b = document.getElementById('itemBody');
@@ -350,50 +389,87 @@
         document.getElementById('submitBtn').disabled = !addedItems.length;
     }
 
-document.getElementById('submitBtn').onclick = async () => {
-    let isValid = true;
-    document.querySelectorAll('.v-field').forEach(f => {
-        if(!f.value.trim()) { f.classList.add('border-red-500'); isValid = false; }
-        else f.classList.remove('border-red-500');
-    });
-    
-    if(!isValid) { showModal('modalWarning'); return; }
-        
-    document.getElementById('loadingIndicator').classList.remove('hidden');
-    
-    try {
-        const response = await fetch(API_URL + "?action=submit", {
-            method: "POST",
-            body: new URLSearchParams({
-                namaUser: document.getElementById('namaUser').value, 
-                tanggal: document.getElementById('tanggal').value,
-                kegiatan: document.getElementById('kegiatan').value, 
-                inputBrand: document.getElementById('inputBrand').value,
-                kodeBudget: document.getElementById('kodeBudget').value, 
-                background: document.getElementById('background').value,
-                objective: document.getElementById('objective').value, 
-                mekanisme: document.getElementById('mekanisme').value,
-                keterangan: document.getElementById('keterangan').value, 
-                items: JSON.stringify(addedItems)
-            })
+    document.getElementById('submitBtn').onclick = async () => {
+        const btn = document.getElementById('submitBtn');
+        let isValid = true;
+        document.querySelectorAll('.v-field').forEach(f => {
+            if(!f.value.trim()) { f.classList.add('border-red-500'); isValid = false; }
+            else f.classList.remove('border-red-500');
         });
-
-        const resultText = await response.text(); // Ini isinya uID dari server
-
-        if (resultText.startsWith("Error")) {
-            alert(resultText);
-        } else {
-            document.getElementById('successID').textContent = resultText;
-            showModal('modalSuccess');
+        if(!isValid) { showModal('modalWarning'); return; }
+            
+        btn.disabled = true;
+        btn.innerText = "SENDING...";
+        document.getElementById('loadingIndicator').classList.remove('hidden');
+        
+        try {
+            const response = await fetch(API_URL + "?action=submit", {
+                method: "POST",
+                body: new URLSearchParams({
+                    namaUser: document.getElementById('namaUser').value, 
+                    tanggal: document.getElementById('tanggal').value,
+                    kegiatan: document.getElementById('kegiatan').value, 
+                    inputBrand: document.getElementById('inputBrand').value,
+                    kodeBudget: document.getElementById('kodeBudget').value, 
+                    background: document.getElementById('background').value,
+                    objective: document.getElementById('objective').value, 
+                    mekanisme: document.getElementById('mekanisme').value,
+                    keterangan: document.getElementById('keterangan').value, 
+                    items: JSON.stringify(addedItems)
+                })
+            });
+            const resultText = await response.text();
+            if (resultText.startsWith("Error")) {
+                alert(resultText);
+                btn.disabled = false;
+                btn.innerText = "SUBMIT";
+            } else {
+                document.getElementById('successID').textContent = resultText;
+                showModal('modalSuccess');
+            }
+        } catch (e) { 
+            alert("Error connecting to server!"); 
+            btn.disabled = false;
+            btn.innerText = "SUBMIT";
+        } finally { 
+            document.getElementById('loadingIndicator').classList.add('hidden'); 
         }
-    } catch (e) { 
-        alert("Error connecting to server!"); 
-    } finally { 
-        document.getElementById('loadingIndicator').classList.add('hidden'); 
-    }
-};
+    };
+    
+	function customConfirm(title, message) {
+	    return new Promise((resolve) => {
+		const modal = document.getElementById('modalConfirm');
+		document.getElementById('confirmTitle').textContent = title;
+		document.getElementById('confirmMessage').textContent = message;
+		
+		modal.classList.remove('hidden');
 
-    window.onload = loadMasterData;
+		document.getElementById('confirmOk').onclick = () => {
+		    modal.classList.add('hidden');
+		    resolve(true);
+		};
+
+		document.getElementById('confirmCancel').onclick = () => {
+		    modal.classList.add('hidden');
+		    resolve(false);
+		};
+	    });
+	}
+
+    window.onload = () => {
+        inNama = document.getElementById('inputNamaProduk');
+        inJml = document.getElementById('inputJumlah');
+        autoList = document.getElementById('autocompleteList');
+
+        if (inNama) {
+            inNama.oninput = filterSearch;
+            inNama.onfocus = filterSearch;
+        }
+        if (inJml) {
+            inJml.oninput = updateRow;
+        }
+        loadMasterData();
+    };
 </script>
 </body>
 </html>
